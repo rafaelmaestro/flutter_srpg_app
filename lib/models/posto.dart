@@ -4,6 +4,7 @@ class Aula {
   String foto;
   double latitude;
   double longitude;
+  DateTime dataInicio;
 
   Aula({
     required this.nome,
@@ -11,5 +12,6 @@ class Aula {
     required this.foto,
     required this.latitude,
     required this.longitude,
+    required this.dataInicio,
   });
 }

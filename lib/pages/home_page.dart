@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
+import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
@@ -52,7 +53,7 @@ class HomePage extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: GoogleMap(
                 initialCameraPosition: CameraPosition(
-                    target: LatLng(local.lat, local.long), zoom: 30),
+                    target: LatLng(local.lat, local.long), zoom: 21),
                 zoomControlsEnabled: false,
                 mapType: MapType.normal,
                 myLocationEnabled: true,
@@ -74,62 +75,7 @@ class HomePage extends StatelessWidget {
           color: Colors.white,
         ),
       ),
-      bottomNavigationBar: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
-        child: BottomAppBar(
-          shape: const CircularNotchedRectangle(),
-          color: const Color(0xFF0A6D92),
-          child: IconTheme(
-            data: const IconThemeData(color: Colors.white),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.home,
-                      color: Colors.white,
-                    ),
-                    onPressed: () => print('Home Button pressed!'),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.class_,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      print('List Button pressed!');
-                    },
-                  ),
-                  const SizedBox(width: 50),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.event,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      print('Person Button pressed!');
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.person,
-                      color: Colors.white,
-                    ),
-                    onPressed: () {
-                      print('Person Button pressed!');
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+      bottomNavigationBar: const SRPGNavigationBar(),
     );
   }
 }
