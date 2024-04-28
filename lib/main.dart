@@ -3,6 +3,7 @@ import 'package:flutter_config/flutter_config.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/pages/home_page.dart';
 import 'package:flutter_srpg_app/repositories/postos_repository.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -30,7 +31,7 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.amber,
