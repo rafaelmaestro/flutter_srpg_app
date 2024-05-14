@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:camera_camera/camera_camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/models/posto.dart';
+import 'package:flutter_srpg_app/pages/camera_page.dart';
 import 'package:flutter_srpg_app/pages/preview_page.dart';
 import 'package:flutter_srpg_app/services/data_service.dart';
 import 'package:flutter_srpg_app/services/localizacao_service.dart';
@@ -28,8 +28,13 @@ class _AulaBottomSheetState extends State<AulaBottomSheet> {
     file = await Get.to(() => PreviewPage(file: file));
 
     if (file != null) {
-      setState(() => arquivo = file);
+      setState(() {
+        arquivo = file;
+      });
 
+      await Future.delayed(const Duration(seconds: 10));
+
+      setState(() {});
       // se o arquivo for diferente de nulo, significa que o usuário já fez a biometria
       // nesse caso, pegaria a imagem e enviaria para o backend verificar, enquanto isso, mostraria o botão de check-in carregando
       Get.back();
@@ -91,7 +96,7 @@ class _AulaBottomSheetState extends State<AulaBottomSheet> {
   }
 
   handleCheckIn() {
-    Get.to(() => CameraCamera(onFile: ((file) => showPreview(file))));
+    Get.to(() => const CameraPage());
     // Adicione a lógica do botão aqui
     // 1 - liberar o check-in apenas se a pessoa estiver a 30m de distância
     // 2 - se o botão for clicado, seguir para tela de biometria.

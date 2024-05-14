@@ -41,6 +41,7 @@ dependencies:
   google_maps_flutter: ^2.6.0
   camera_camera: ^3.0.0
   get: ^4.6.6
+  camera: ^0.10.5+9
 
 dev_dependencies:
   flutter_test:
