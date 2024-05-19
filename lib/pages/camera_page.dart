@@ -23,6 +23,13 @@ class _CameraPageState extends State<CameraPage> {
     _loadCamera();
   }
 
+  @override
+  void dispose() {
+    // Dispose of the controller when the widget is disposed.
+    controller?.dispose();
+    super.dispose();
+  }
+
   _loadCamera() async {
     try {
       cameras = await availableCameras();
@@ -141,7 +148,7 @@ class _CameraPageState extends State<CameraPage> {
                         color: Colors.white,
                         size: 30,
                       ),
-                      onPressed: () => print('Finalizar')
+                      onPressed: () => {Get.back(result: imagem)}
                       // Get.back(result: file),
                       ))),
           Padding(
@@ -155,7 +162,11 @@ class _CameraPageState extends State<CameraPage> {
                       color: Colors.white,
                       size: 30,
                     ),
-                    onPressed: () => Get.back(),
+                    onPressed: () => {
+                      setState(() {
+                        imagem = null;
+                      })
+                    },
                   )))
         ],
       ),
@@ -194,21 +205,6 @@ class _CameraPageState extends State<CameraPage> {
           ));
     }
   }
-
-  // _cameraPreviewWidget() {
-  //   final CameraController? cameraController = controller;
-  //   if (cameraController == null || !cameraController.value.isInitialized) {
-  //     return const CircularProgressIndicator();
-  //   } else {
-  //     return Stack(
-  //       alignment: AlignmentDirectional.bottomCenter,
-  //       children: [
-  //         CameraPreview(controller!),
-  //         _botaoCapturaWidget(),
-  //       ],
-  //     );
-  //   }
-  // }
 
   _botaoCapturaWidget() {
     return Padding(

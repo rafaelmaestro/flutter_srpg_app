@@ -1,12 +1,12 @@
-import 'dart:io';
-
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/models/posto.dart';
 import 'package:flutter_srpg_app/pages/camera_page.dart';
-import 'package:flutter_srpg_app/pages/preview_page.dart';
+import 'package:flutter_srpg_app/pages/evento_aluno_page.dart';
 import 'package:flutter_srpg_app/services/data_service.dart';
 import 'package:flutter_srpg_app/services/localizacao_service.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
@@ -21,24 +21,25 @@ class AulaBottomSheet extends StatefulWidget {
 }
 
 class _AulaBottomSheetState extends State<AulaBottomSheet> {
-  File arquivo = File('');
+  XFile arquivo = XFile('');
   LocalizacaoService service = LocalizacaoService();
+  bool isButtonClicked = false;
 
-  showPreview(file) async {
-    file = await Get.to(() => PreviewPage(file: file));
+  getBiometria() async {
+    var fotoBiometria = await Get.to(() => CameraPage());
 
-    if (file != null) {
-      setState(() {
-        arquivo = file;
-      });
-
+    if (fotoBiometria != null) {
+      // Adicione a lógica de envio da foto para o servidor
+      print(fotoBiometria);
       await Future.delayed(const Duration(seconds: 10));
 
-      setState(() {});
-      // se o arquivo for diferente de nulo, significa que o usuário já fez a biometria
-      // nesse caso, pegaria a imagem e enviaria para o backend verificar, enquanto isso, mostraria o botão de check-in carregando
-      Get.back();
+      // se retornar erro, retornar false
+      // se retornar sucesso, retornar true
+
+      return true;
     }
+
+    return false;
   }
 
   @override
@@ -95,11 +96,56 @@ class _AulaBottomSheetState extends State<AulaBottomSheet> {
     );
   }
 
-  handleCheckIn() {
-    Get.to(() => const CameraPage());
-    // Adicione a lógica do botão aqui
-    // 1 - liberar o check-in apenas se a pessoa estiver a 30m de distância
-    // 2 - se o botão for clicado, seguir para tela de biometria.
-    print('Realizar biometria');
+  handleCheckIn() async {
+    setState(() {
+      isButtonClicked = true;
+    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          content: Center(
+            child: CircularProgressIndicator(color: Color(0xFF0A6D92)),
+          ),
+        );
+      },
+    );
+
+    var biometria = await getBiometria();
+
+    Navigator.pop(context); // fecha o Dialog
+
+    if (biometria == true) {
+      Fluttertoast.showToast(
+          msg:
+              "Check-in realizado com sucesso! 🎉 \n Por favor, permaneça no local do evento para que sua presença seja contabilizada! ✅",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 5,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0);
+
+      Get.to(() => EventoAlunoPage());
+    } else {
+      // TODO: exibir mensagens de erro diferentes para cada tipo de erro
+      Fluttertoast.showToast(
+          msg:
+              "Erro ao realizar check-in! 😢 \n Por favor, tente novamente! 🔄",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 5,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+
+      setState(() {
+        isButtonClicked = false;
+      });
+    }
   }
 }

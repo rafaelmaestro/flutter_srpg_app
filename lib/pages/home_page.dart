@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
+import 'package:flutter_srpg_app/widgets/adicionar_evento.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -66,15 +67,7 @@ class HomePage extends StatelessWidget {
       ),
       extendBody: false,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => {},
-        backgroundColor: const Color(0xFF0A6D92),
-        shape: const CircleBorder(),
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-        ),
-      ),
+      floatingActionButton: CustomFloatingActionButton(),
       bottomNavigationBar: const SRPGNavigationBar(),
     );
   }

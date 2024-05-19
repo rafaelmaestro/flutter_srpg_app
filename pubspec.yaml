@@ -42,6 +42,7 @@ dependencies:
   camera_camera: ^3.0.0
   get: ^4.6.6
   camera: ^0.10.5+9
+  fluttertoast: ^8.0.8
 
 dev_dependencies:
   flutter_test:
