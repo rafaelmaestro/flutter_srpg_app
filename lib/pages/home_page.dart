@@ -15,6 +15,7 @@ class HomePage extends StatelessWidget {
     return Scaffold(
       key: appKey,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Column(
           children: [
             Text(
