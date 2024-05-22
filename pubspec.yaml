@@ -70,6 +70,7 @@ flutter:
   assets:
     - lib/assets/app/aulas_icon.png
     - lib/assets/app/icon.png
+    - lib/assets/app/user_m.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

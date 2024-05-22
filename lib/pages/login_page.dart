@@ -1,9 +1,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_srpg_app/pages/cadastro_page_1.dart';
+import 'package:flutter_srpg_app/pages/esqueceu_senha_page.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 
+// cpf
+// nome
+// Email
+// foto
+// senha
 class LogIn extends StatefulWidget {
   @override
   _LogInState createState() => _LogInState();
@@ -120,7 +127,7 @@ class _LogInState extends State<LogIn> {
                                         color: const Color(0xFF0A6D92)),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        print("Cadastrar");
+                                        _handleCadastrar();
                                       },
                                   ),
                                 ],
@@ -146,7 +153,7 @@ class _LogInState extends State<LogIn> {
                                         color: const Color(0xFF0A6D92)),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        print("Esqueceu sua senha?");
+                                        _handleEsqueceuSenha();
                                       },
                                   ),
                                 ],
@@ -178,5 +185,13 @@ class _LogInState extends State<LogIn> {
         textColor: Colors.white,
         fontSize: 16.0);
     Get.toNamed('/home');
+  }
+
+  _handleCadastrar() {
+    Get.to(() => CadastroPage1());
+  }
+
+  _handleEsqueceuSenha() {
+    Get.to(() => EsqueceuSenhaPage());
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
+import 'package:flutter_srpg_app/pages/cadastro_page_1.dart';
 import 'package:flutter_srpg_app/pages/home_page.dart';
 import 'package:flutter_srpg_app/pages/login_page.dart';
 import 'package:flutter_srpg_app/repositories/postos_repository.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         getPages: [
           GetPage(name: '/', page: () => LogIn()),
           GetPage(name: '/home', page: () => HomePage()),
+          GetPage(name: '/cadastrar', page: () => CadastroPage1()),
         ],
       ),
     );
