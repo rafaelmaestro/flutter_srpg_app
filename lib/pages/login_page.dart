@@ -1,17 +1,16 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_srpg_app/helpers/is_numeric_helper.dart';
+import 'package:flutter_srpg_app/helpers/is_valid_email_helper.dart';
 import 'package:flutter_srpg_app/pages/cadastro_page_1.dart';
 import 'package:flutter_srpg_app/pages/esqueceu_senha_page.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 
-// cpf
-// nome
-// Email
-// foto
-// senha
 class LogIn extends StatefulWidget {
+  const LogIn({super.key});
+
   @override
   _LogInState createState() => _LogInState();
 }
@@ -19,6 +18,7 @@ class LogIn extends StatefulWidget {
 class _LogInState extends State<LogIn> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -35,11 +35,9 @@ class _LogInState extends State<LogIn> {
               width: MediaQuery.of(context).size.width,
               height: MediaQuery.of(context).size.height * 0.3,
               decoration: const BoxDecoration(
-                color: const Color(0xFF0A6D92),
-                // image: DecorationImage(
-                //     image: AssetImage('lib/assets/app/icon.png'))
+                color: Color(0xFF0A6D92),
               ),
-              child: Center(
+              child: const Center(
                 child: Image(
                   image: AssetImage('lib/assets/app/icon.png'),
                   width: 100,
@@ -48,67 +46,102 @@ class _LogInState extends State<LogIn> {
             ),
             Expanded(
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-                decoration: BoxDecoration(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                decoration: const BoxDecoration(
                   color: Colors.white, // Adicione uma cor ao Container
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(64)),
                 ),
                 child: SafeArea(
                   top: false,
                   child: SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           "Acesse sua conta",
                           style: TextStyle(fontSize: 28),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            MyInputField(
-                              label: "Email ou CPF",
-                              placeholder: "Insira seu e-mail ou cpf",
-                              onChange: (value) {
-                                this.emailController.text = value;
-                              },
-                              isEmailOrCpfField: true,
-                            ),
-                            SizedBox(height: 20),
-                            MyInputField(
-                              label: "Senha",
-                              placeholder: "Insira sua senha",
-                              onChange: (value) {
-                                this.passwordController.text = value;
-                              },
-                              isPasswordField: true,
-                            ),
-                            SizedBox(height: 40),
-                            ElevatedButton(
-                              onPressed: () {
-                                _handleLogin();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0A6D92),
-                                  minimumSize: const Size(double.infinity, 50),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        bottomLeft: Radius.circular(16),
-                                        bottomRight: Radius.circular(16)),
-                                  )),
-                              child: const Text('Entrar',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  )),
-                            ),
-                          ],
+                        Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              MyInputField(
+                                label: "Email ou CPF",
+                                placeholder: "Insira seu e-mail ou CPF",
+                                onChange: (value) {
+                                  emailController.text = value;
+                                },
+                                isEmailOrCpfField: true,
+                                validateFunction: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Por favor, insira seu e-mail ou CPF';
+                                  }
+
+                                  if (isNumeric(value)) {
+                                    if (value.length != 11) {
+                                      return 'CPF inválido';
+                                    } else {
+                                      return null;
+                                    }
+                                  }
+
+                                  if (value.contains('@') == true ||
+                                      isNumeric(value) == false) {
+                                    if (!isValidEmail(value)) {
+                                      return 'E-mail inválido';
+                                    } else {
+                                      return null;
+                                    }
+                                  }
+
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 20),
+                              MyInputField(
+                                label: "Senha",
+                                placeholder: "Insira sua senha",
+                                onChange: (value) {
+                                  passwordController.text = value;
+                                },
+                                isPasswordField: true,
+                                validateFunction: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Senha não pode ser vazia';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              const SizedBox(height: 40),
+                              ElevatedButton(
+                                onPressed: () {
+                                  _handleLogin();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF0A6D92),
+                                    minimumSize:
+                                        const Size(double.infinity, 50),
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(16),
+                                          bottomLeft: Radius.circular(16),
+                                          bottomRight: Radius.circular(16)),
+                                    )),
+                                child: const Text('Entrar',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                    )),
+                              ),
+                            ],
+                          ),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 40,
                         ),
                         Row(
@@ -117,14 +150,14 @@ class _LogInState extends State<LogIn> {
                           children: [
                             RichText(
                               text: TextSpan(
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 18, color: Colors.black),
                                 children: <TextSpan>[
-                                  TextSpan(text: 'Não tem uma conta? '),
+                                  const TextSpan(text: 'Não tem uma conta? '),
                                   TextSpan(
                                     text: 'Cadastre-se',
-                                    style: TextStyle(
-                                        color: const Color(0xFF0A6D92)),
+                                    style: const TextStyle(
+                                        color: Color(0xFF0A6D92)),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
                                         _handleCadastrar();
@@ -135,7 +168,7 @@ class _LogInState extends State<LogIn> {
                             ),
                           ],
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         Row(
@@ -144,13 +177,13 @@ class _LogInState extends State<LogIn> {
                           children: [
                             RichText(
                               text: TextSpan(
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 12, color: Colors.black),
                                 children: <TextSpan>[
                                   TextSpan(
                                     text: 'Esqueceu sua senha?',
-                                    style: TextStyle(
-                                        color: const Color(0xFF0A6D92)),
+                                    style: const TextStyle(
+                                        color: Color(0xFF0A6D92)),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
                                         _handleEsqueceuSenha();
@@ -172,6 +205,9 @@ class _LogInState extends State<LogIn> {
   }
 
   _handleLogin() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     // TODO: Implementar a lógica de login
     print("Email: ${emailController.text}");
     print("Senha: ${passwordController.text}");
@@ -188,10 +224,10 @@ class _LogInState extends State<LogIn> {
   }
 
   _handleCadastrar() {
-    Get.to(() => CadastroPage1());
+    Get.to(() => const CadastroPage1());
   }
 
   _handleEsqueceuSenha() {
-    Get.to(() => EsqueceuSenhaPage());
+    Get.to(() => const EsqueceuSenhaPage());
   }
 }

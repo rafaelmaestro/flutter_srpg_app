@@ -6,6 +6,7 @@ class MyInputField extends StatelessWidget {
   final String label;
   final String placeholder;
   final Function onChange;
+  final String? Function(String?)? validateFunction;
   const MyInputField({
     super.key,
     required this.placeholder,
@@ -13,15 +14,16 @@ class MyInputField extends StatelessWidget {
     this.isPasswordField = false,
     this.isEmailOrCpfField = false,
     required this.onChange,
+    required this.validateFunction,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 10),
+      padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 10),
       decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.only(
+          borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(16),
               bottomLeft: Radius.circular(16),
               bottomRight: Radius.circular(16)),
@@ -34,14 +36,16 @@ class MyInputField extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label),
-          TextField(
+          TextFormField(
             obscureText: isPasswordField,
             onChanged: ((value) => onChange(value)),
+            validator: validateFunction,
             decoration: InputDecoration(
                 hintText: placeholder,
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.all(0)),
+                errorStyle: const TextStyle(
+                    color: Colors.red, fontWeight: FontWeight.bold),
+                contentPadding: const EdgeInsets.all(0)),
           ),
         ],
       ),

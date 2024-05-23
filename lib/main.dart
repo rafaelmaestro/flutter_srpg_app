@@ -8,10 +8,12 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -30,9 +32,9 @@ class MyApp extends StatelessWidget {
         ),
         initialRoute: '/',
         getPages: [
-          GetPage(name: '/', page: () => LogIn()),
-          GetPage(name: '/home', page: () => HomePage()),
-          GetPage(name: '/cadastrar', page: () => CadastroPage1()),
+          GetPage(name: '/', page: () => const LogIn()),
+          GetPage(name: '/home', page: () => const HomePage()),
+          GetPage(name: '/cadastrar', page: () => const CadastroPage1()),
         ],
       ),
     );
