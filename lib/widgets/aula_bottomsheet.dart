@@ -2,8 +2,8 @@ import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/models/posto.dart';
-import 'package:flutter_srpg_app/pages/camera_page.dart';
-import 'package:flutter_srpg_app/pages/evento_aluno_page.dart';
+import 'package:flutter_srpg_app/pages/camera/camera_page.dart';
+import 'package:flutter_srpg_app/pages/evento/evento_aluno_page.dart';
 import 'package:flutter_srpg_app/services/data_service.dart';
 import 'package:flutter_srpg_app/services/localizacao_service.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -26,7 +26,7 @@ class _AulaBottomSheetState extends State<AulaBottomSheet> {
   bool isButtonClicked = false;
 
   getBiometria() async {
-    var fotoBiometria = await Get.to(() => CameraPage());
+    var fotoBiometria = await Get.to(() => const CameraPage());
 
     if (fotoBiometria != null) {
       // Adicione a lógica de envio da foto para o servidor
@@ -105,7 +105,7 @@ class _AulaBottomSheetState extends State<AulaBottomSheet> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
+        return const AlertDialog(
           backgroundColor: Colors.transparent,
           elevation: 0,
           content: Center(
@@ -130,7 +130,7 @@ class _AulaBottomSheetState extends State<AulaBottomSheet> {
           textColor: Colors.white,
           fontSize: 16.0);
 
-      Get.to(() => EventoAlunoPage());
+      Get.to(() => const EventoAlunoPage());
     } else {
       // TODO: exibir mensagens de erro diferentes para cada tipo de erro
       Fluttertoast.showToast(

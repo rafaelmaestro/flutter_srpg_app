@@ -3,8 +3,10 @@ import 'package:flutter/material.dart';
 class MyInputField extends StatelessWidget {
   final bool isEmailOrCpfField;
   final bool isPasswordField;
+  final Widget prefixIcon;
   final String label;
   final String placeholder;
+  final int maxLen;
   final Function onChange;
   final String? Function(String?)? validateFunction;
   const MyInputField({
@@ -15,6 +17,8 @@ class MyInputField extends StatelessWidget {
     this.isEmailOrCpfField = false,
     required this.onChange,
     required this.validateFunction,
+    this.maxLen = 0,
+    this.prefixIcon = const SizedBox.shrink(),
   });
 
   @override
@@ -37,16 +41,26 @@ class MyInputField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextFormField(
+            maxLines: isPasswordField ? 1 : null,
+            maxLength: maxLen == 0 ? null : maxLen,
             obscureText: isPasswordField,
             onChanged: ((value) => onChange(value)),
             validator: validateFunction,
             decoration: InputDecoration(
+                prefixIcon: isPasswordField
+                    ? const Icon(
+                        Icons.lock,
+                        color: Color(0xFF0A6D92),
+                      )
+                    : prefixIcon,
+                labelText: label,
+                labelStyle: const TextStyle(color: Color(0xFF0A6D92)),
                 hintText: placeholder,
                 border: InputBorder.none,
                 errorStyle: const TextStyle(
                     color: Colors.red, fontWeight: FontWeight.bold),
                 contentPadding: const EdgeInsets.all(0)),
-          ),
+          )
         ],
       ),
     );

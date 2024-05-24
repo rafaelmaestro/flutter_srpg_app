@@ -1,6 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_srpg_app/pages/camera_page.dart';
+import 'package:flutter_srpg_app/pages/camera/camera_page.dart';
 import 'package:get/get.dart';
 
 // cpf
@@ -9,6 +9,8 @@ import 'package:get/get.dart';
 // foto
 // senha
 class CadastroPage2 extends StatefulWidget {
+  const CadastroPage2({super.key});
+
   @override
   _CadastroPage2State createState() => _CadastroPage2State();
 }
@@ -30,7 +32,7 @@ class _CadastroPage2State extends State<CadastroPage2> {
             Container(
               width: MediaQuery.of(context).size.width,
               decoration: const BoxDecoration(
-                color: const Color(0xFF0A6D92),
+                color: Color(0xFF0A6D92),
               ),
               child: SafeArea(
                 child: Stack(
@@ -39,14 +41,14 @@ class _CadastroPage2State extends State<CadastroPage2> {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: IconButton(
-                        icon: Icon(Icons.arrow_back),
+                        icon: const Icon(Icons.arrow_back),
                         color: Colors.white,
                         onPressed: () {
                           Get.back();
                         },
                       ),
                     ),
-                    Container(
+                    const SizedBox(
                       height: 100,
                       child: Image(
                         image: AssetImage('lib/assets/app/icon.png'),
@@ -59,37 +61,38 @@ class _CadastroPage2State extends State<CadastroPage2> {
             ),
             Expanded(
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-                decoration: BoxDecoration(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+                decoration: const BoxDecoration(
                   color: Colors.white, // Adicione uma cor ao Container
                   borderRadius: BorderRadius.only(topLeft: Radius.circular(64)),
                 ),
                 child: SafeArea(
                   top: false,
                   child: SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        const Text(
                           "Cadastre-se",
                           style: TextStyle(fontSize: 28),
                         ),
-                        SizedBox(
+                        const SizedBox(
                           height: 20,
                         ),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Container(
+                            const SizedBox(
                               height: 100,
                               child: Image(
                                 image: AssetImage('lib/assets/app/user_m.png'),
                                 width: 100,
                               ),
                             ),
-                            SizedBox(height: 20),
-                            Center(
+                            const SizedBox(height: 20),
+                            const Center(
                               child: Text(
                                 'Vamos precisar de uma foto sua para continuar, ok?',
                                 style: TextStyle(fontSize: 20),
@@ -97,14 +100,14 @@ class _CadastroPage2State extends State<CadastroPage2> {
                                 softWrap: true,
                               ),
                             ),
-                            Center(
+                            const Center(
                               child: Text("📸", style: TextStyle(fontSize: 20)),
                             ),
-                            SizedBox(height: 70),
+                            const SizedBox(height: 70),
                             Center(
                               child: RichText(
                                 textAlign: TextAlign.center,
-                                text: TextSpan(
+                                text: const TextSpan(
                                   style: TextStyle(
                                       color: Colors.grey, fontSize: 16),
                                   children: <TextSpan>[
@@ -124,8 +127,8 @@ class _CadastroPage2State extends State<CadastroPage2> {
                                 ),
                               ),
                             ),
-                            SizedBox(height: 80),
-                            Row(
+                            const SizedBox(height: 80),
+                            const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
@@ -134,11 +137,11 @@ class _CadastroPage2State extends State<CadastroPage2> {
                                 ),
                                 Icon(
                                   Icons.looks_two_outlined,
-                                  color: const Color(0xFF0A6D92),
+                                  color: Color(0xFF0A6D92),
                                 ),
                               ],
                             ),
-                            SizedBox(height: 40),
+                            const SizedBox(height: 40),
                             _botaoBottom()
                           ],
                         ),
@@ -153,47 +156,28 @@ class _CadastroPage2State extends State<CadastroPage2> {
   }
 
   _botaoBottom() {
-    if (arquivo != null) {
-      return ElevatedButton(
-        onPressed: () {
-          _handleCadastroBiometria();
-        },
-        style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF0A6D92),
-            minimumSize: const Size(double.infinity, 50),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(16),
-                  bottomLeft: Radius.circular(16),
-                  bottomRight: Radius.circular(16)),
-            )),
-        child: const Text('Vamos lá!',
-            style: TextStyle(
-              color: Colors.white,
-            )),
-      );
-    } else {
-      return ElevatedButton(
-          onPressed: () {
-            _handleCadastroBiometria();
-          },
-          style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF0A6D92),
-              minimumSize: const Size(double.infinity, 50),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(16)),
-              )),
-          child: CircularProgressIndicator(
+    return ElevatedButton(
+      onPressed: () {
+        _handleCadastroBiometria();
+      },
+      style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF0A6D92),
+          minimumSize: const Size(double.infinity, 50),
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16)),
+          )),
+      child: const Text('Vamos lá!',
+          style: TextStyle(
             color: Colors.white,
-          ));
-    }
+          )),
+    );
   }
 
   _handleCadastroBiometria() async {
-    var fotoBiometria = await Get.to(() => CameraPage());
+    var fotoBiometria = await Get.to(() => const CameraPage());
 
     if (fotoBiometria != null) {
       // Adicione a lógica de envio da foto para o servidor

@@ -68,7 +68,7 @@ class HomePage extends StatelessWidget {
       ),
       extendBody: false,
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: CustomFloatingActionButton(),
+      floatingActionButton: const CustomFloatingActionButton(),
       bottomNavigationBar: const SRPGNavigationBar(),
     );
   }

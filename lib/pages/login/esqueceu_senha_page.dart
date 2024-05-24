@@ -170,6 +170,10 @@ class _EsqueceuSenhaPageState extends State<EsqueceuSenhaPage> {
 
                   return null;
                 },
+                prefixIcon: const Icon(
+                  Icons.person,
+                  color: Color(0xFF0A6D92),
+                ),
               ),
               const SizedBox(height: 40),
               ElevatedButton(

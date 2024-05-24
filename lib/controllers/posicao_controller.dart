@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_srpg_app/pages/home_page.dart';
+import 'package:flutter_srpg_app/pages/login/home_page.dart';
 import 'package:flutter_srpg_app/repositories/postos_repository.dart';
 import 'package:flutter_srpg_app/widgets/aula_bottomsheet.dart';
 import 'package:geolocator/geolocator.dart';

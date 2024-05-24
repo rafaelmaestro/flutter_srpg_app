@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/helpers/is_numeric_helper.dart';
 import 'package:flutter_srpg_app/helpers/is_valid_email_helper.dart';
 import 'package:flutter_srpg_app/helpers/is_valid_password_helper.dart';
-import 'package:flutter_srpg_app/pages/cadastro_page_2.dart';
+import 'package:flutter_srpg_app/pages/cadastro/cadastro_page_2.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:get/get.dart';
 
@@ -101,6 +101,10 @@ class _CadastroPage1State extends State<CadastroPage1> {
                                   //caracteres especiais
                                   return null;
                                 },
+                                prefixIcon: const Icon(
+                                  Icons.abc,
+                                  color: Color(0xFF0A6D92),
+                                ),
                               ),
                               const SizedBox(height: 20),
                               MyInputField(
@@ -120,6 +124,10 @@ class _CadastroPage1State extends State<CadastroPage1> {
                                   }
                                   return null;
                                 },
+                                prefixIcon: const Icon(
+                                  Icons.email,
+                                  color: Color(0xFF0A6D92),
+                                ),
                               ),
                               const SizedBox(height: 20),
                               MyInputField(
@@ -142,6 +150,10 @@ class _CadastroPage1State extends State<CadastroPage1> {
                                   }
                                   return null;
                                 },
+                                prefixIcon: const Icon(
+                                  Icons.perm_identity,
+                                  color: Color(0xFF0A6D92),
+                                ),
                               ),
                               const SizedBox(height: 20),
                               MyInputField(
@@ -239,6 +251,6 @@ class _CadastroPage1State extends State<CadastroPage1> {
     }
     // TODO: Seguir para página 2
     // TODO: Criar um controller para armazenar os dados do usuário
-    Get.to(() => CadastroPage2());
+    Get.to(() => const CadastroPage2());
   }
 }
