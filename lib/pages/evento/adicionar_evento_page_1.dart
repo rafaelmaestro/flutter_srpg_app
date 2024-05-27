@@ -1,7 +1,9 @@
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/widgets/adicionar_evento.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
+import 'package:intl/intl.dart';
 
 class AdicionarEventoPage1 extends StatefulWidget {
   const AdicionarEventoPage1({super.key});
@@ -11,6 +13,7 @@ class AdicionarEventoPage1 extends StatefulWidget {
 }
 
 class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
+  var pergunta = 1;
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -72,6 +75,14 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
+                            const Center(
+                              child: Text(
+                                'O que você quer organizar? 🏫',
+                                style: TextStyle(
+                                    fontSize: 22, color: Color(0xFF0A6D92)),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
                             MyInputField(
                               label: "Nome",
                               placeholder: "Insira o nome do seu evento",
@@ -84,6 +95,10 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                 // }
                                 return null;
                               },
+                              prefixIcon: const Icon(
+                                Icons.abc,
+                                color: Color(0xFF0A6D92),
+                              ),
                             ),
                             const SizedBox(height: 20),
                             MyInputField(
@@ -99,6 +114,117 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                 return null;
                               },
                               maxLen: 200,
+                              prefixIcon: const Icon(
+                                Icons.event_note,
+                                color: Color(0xFF0A6D92),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            const Center(
+                              child: Text(
+                                'Quando vai acontecer? 📅',
+                                style: TextStyle(
+                                    fontSize: 22, color: Color(0xFF0A6D92)),
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            // ! Cópia do style dos inputs textuais
+                            Container(
+                              padding: const EdgeInsets.only(
+                                  top: 20, left: 20, right: 20, bottom: 10),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      bottomLeft: Radius.circular(16),
+                                      bottomRight: Radius.circular(16)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 32,
+                                      color: Colors.black.withOpacity(.1),
+                                    )
+                                  ]),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  DateTimeField(
+                                    decoration: const InputDecoration(
+                                        labelText: 'Data do Evento',
+                                        labelStyle:
+                                            TextStyle(color: Color(0xFF0A6D92)),
+                                        hintText: 'Selecione a data do evento',
+                                        border: InputBorder.none,
+                                        prefixIcon: Icon(
+                                          Icons.calendar_today,
+                                          color: Color(0xFF0A6D92),
+                                        ),
+                                        errorStyle: TextStyle(
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.bold),
+                                        contentPadding: EdgeInsets.all(8.0)),
+                                    format: DateFormat("yyyy-MM-dd"),
+                                    onShowPicker:
+                                        (context, currentValue) async {
+                                      final date = await showDatePicker(
+                                          context: context,
+                                          firstDate: DateTime(1900),
+                                          initialDate:
+                                              currentValue ?? DateTime.now(),
+                                          lastDate: DateTime(2100));
+                                      return date;
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            // ! Cópia do style dos inputs textuais
+                            Container(
+                              padding: const EdgeInsets.only(
+                                  top: 20, left: 20, right: 20, bottom: 10),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      bottomLeft: Radius.circular(16),
+                                      bottomRight: Radius.circular(16)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 32,
+                                      color: Colors.black.withOpacity(.1),
+                                    )
+                                  ]),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  DateTimeField(
+                                    decoration: const InputDecoration(
+                                        labelText: 'Hora do Evento',
+                                        labelStyle:
+                                            TextStyle(color: Color(0xFF0A6D92)),
+                                        hintText: 'Selecione a hora do evento',
+                                        border: InputBorder.none,
+                                        prefixIcon: Icon(
+                                          Icons.access_time,
+                                          color: Color(0xFF0A6D92),
+                                        ),
+                                        errorStyle: TextStyle(
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.bold),
+                                        contentPadding: EdgeInsets.all(8.0)),
+                                    format: DateFormat("HH:mm"),
+                                    onShowPicker:
+                                        (context, currentValue) async {
+                                      final time = await showTimePicker(
+                                        context: context,
+                                        initialTime: TimeOfDay.fromDateTime(
+                                            currentValue ?? DateTime.now()),
+                                      );
+                                      return DateTimeField.convert(time);
+                                    },
+                                  ),
+                                ],
+                              ),
                             ),
                             const SizedBox(height: 20),
                             const Row(
@@ -150,5 +276,13 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
       floatingActionButton: const CustomFloatingActionButton(),
       bottomNavigationBar: const SRPGNavigationBar(),
     );
+  }
+
+  _handleProsseguir() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    // TODO: Seguir p/ pagina 2 de cadastro de evento
+    // Get.to(() => AdicionarEventoPage2());
   }
 }
