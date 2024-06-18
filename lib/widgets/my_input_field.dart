@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class MyInputField extends StatelessWidget {
   final bool isEmailOrCpfField;
   final bool isPasswordField;
+  final String valorInicial;
   final Widget prefixIcon;
   final String label;
   final String placeholder;
@@ -19,6 +20,7 @@ class MyInputField extends StatelessWidget {
     required this.validateFunction,
     this.maxLen = 0,
     this.prefixIcon = const SizedBox.shrink(),
+    this.valorInicial = '',
   });
 
   @override
@@ -43,6 +45,7 @@ class MyInputField extends StatelessWidget {
           TextFormField(
             maxLines: isPasswordField ? 1 : null,
             maxLength: maxLen == 0 ? null : maxLen,
+            initialValue: valorInicial,
             obscureText: isPasswordField,
             onChanged: ((value) => onChange(value)),
             validator: validateFunction,

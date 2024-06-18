@@ -177,7 +177,7 @@ class _CadastroPage2State extends State<CadastroPage2> {
   }
 
   _handleCadastroBiometria() async {
-    var fotoBiometria = await Get.to(() => const CameraPage());
+    var fotoBiometria = await Get.off(const CameraPage());
 
     if (fotoBiometria != null) {
       // Adicione a lógica de envio da foto para o servidor

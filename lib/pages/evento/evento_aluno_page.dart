@@ -71,7 +71,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
             alignment: Alignment.center,
             child: Text(
               '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
-              style: TextStyle(fontSize: 50),
+              style: const TextStyle(fontSize: 50),
             ),
           ),
           Align(
@@ -109,38 +109,38 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
                 fontWeight: FontWeight.bold), // Torna o título em negrito
           ),
           content: const Text(
-            'Você tem certeza que deseja realizar o check-out?',
+            'Fazer check-out antes do evento acabar é como sair do cinema no meio do filme. Você não quer perder o final emocionante, né? 🍿',
             textAlign: TextAlign.center, // Centraliza o conteúdo
           ),
           actions: <Widget>[
             Center(
               child: TextButton(
-                child: const Text('Confirmar'),
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.red, // Cor do texto do botão Cancelar
-                  side: BorderSide(
+                  side: const BorderSide(
                       color: Colors.red, width: 2), // Borda do botão Cancela
                   minimumSize: const Size(double.infinity, 50),
                 ),
                 onPressed: () {
                   _callCheckout();
                 },
+                child: const Text('Sim, quero sair!'),
               ),
             ),
             const SizedBox(height: 10),
             Center(
               child: TextButton(
-                child: const Text('Quero ficar mais um pouco!'),
                 style: TextButton.styleFrom(
                   foregroundColor:
                       Colors.green, // Cor do texto do botão Cancelar
-                  side: BorderSide(
+                  side: const BorderSide(
                       color: Colors.green, width: 2), // Borda do botão Cancela
                   minimumSize: const Size(double.infinity, 50),
                 ),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
+                child: const Text('Quero ficar mais um pouco!'),
               ),
             )
           ],
@@ -151,6 +151,6 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
 
   _callCheckout() {
     // TODO: Implementar a lógica de checkout chamar o back-end para registrar a saída do aluno
-    Get.offAllNamed('/');
+    Get.offNamed('/home');
   }
 }

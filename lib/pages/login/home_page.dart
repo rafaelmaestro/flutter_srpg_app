@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
-import 'package:flutter_srpg_app/widgets/adicionar_evento.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 final appKey = GlobalKey();
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final mapKey = GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +53,14 @@ class HomePage extends StatelessWidget {
           ],
         ),
         child: ChangeNotifierProvider<PosicaoController>(
-          create: (context) => PosicaoController(),
+          create: (context) => PosicaoController(loadAulasBool: true),
           child: Builder(builder: (context) {
             final local = context.watch<PosicaoController>();
 
             return ClipRRect(
               borderRadius: BorderRadius.circular(16),
               child: GoogleMap(
+                key: mapKey,
                 initialCameraPosition: CameraPosition(
                     target: LatLng(local.lat, local.long), zoom: 21),
                 zoomControlsEnabled: false,
@@ -67,8 +74,8 @@ class HomePage extends StatelessWidget {
         ),
       ),
       extendBody: false,
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: const CustomFloatingActionButton(),
+      // floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      // floatingActionButton: const CustomFloatingActionButton(),
       bottomNavigationBar: const SRPGNavigationBar(),
     );
   }

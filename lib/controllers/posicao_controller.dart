@@ -10,14 +10,18 @@ class PosicaoController extends ChangeNotifier {
   double long = 0.0;
   String erro = '';
   Set<Marker> markers = <Marker>{};
+  bool loadAulasBool;
   late GoogleMapController _mapsController;
+
+  PosicaoController({this.loadAulasBool = false});
 
   get mapsController => _mapsController;
 
   onMapCreated(GoogleMapController gmc) async {
     _mapsController = gmc;
-    getPosicao();
-    loadAulas();
+    await getPosicao();
+    loadAulasBool == true ? loadAulas() : null;
+    loadAulasBool == false ? addEventoMarker(LatLng(lat, long)) : null;
   }
 
   loadAulas() {
@@ -40,6 +44,16 @@ class PosicaoController extends ChangeNotifier {
         // ),
       ));
     });
+
+    notifyListeners();
+  }
+
+  addEventoMarker(LatLng posicao) async {
+    final marker = Marker(markerId: const MarkerId('1'), position: posicao);
+
+    if (markers.isNotEmpty) markers.clear();
+
+    markers.add(marker);
 
     notifyListeners();
   }
