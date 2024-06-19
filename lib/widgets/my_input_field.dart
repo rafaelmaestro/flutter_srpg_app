@@ -26,6 +26,7 @@ class MyInputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      // margin: EdgeInsets.only(left: 12, right: 12),
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 10),
       decoration: BoxDecoration(
           color: Colors.white,
@@ -36,7 +37,7 @@ class MyInputField extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               blurRadius: 32,
-              color: Colors.black.withOpacity(.1),
+              color: Colors.grey.withOpacity(.1),
             )
           ]),
       child: Column(

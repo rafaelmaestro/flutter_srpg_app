@@ -41,15 +41,13 @@ class _SRPGNavigationBarState extends State<SRPGNavigationBar> {
                         Icons.class_,
                         color: Colors.white,
                       ),
-                      onPressed: () {
-                        print('List Button pressed!');
-                      },
+                      onPressed: () => Get.toNamed('/meus-eventos'),
                     ),
                     const SizedBox(
                         width: 50), // Espaço para o FloatingActionButton
                     IconButton(
                       icon: const Icon(
-                        Icons.event,
+                        Icons.analytics,
                         color: Colors.white,
                       ),
                       onPressed: () {

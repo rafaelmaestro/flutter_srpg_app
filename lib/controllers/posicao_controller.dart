@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/pages/login/home_page.dart';
-import 'package:flutter_srpg_app/repositories/postos_repository.dart';
+import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/aula_bottomsheet.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -25,24 +25,21 @@ class PosicaoController extends ChangeNotifier {
   }
 
   loadAulas() {
-    final aulas = AulasRepository().aulas;
+    final aulas = EventoRepository().aulas;
     aulas.forEach((aula) async {
-      markers.add(Marker(
-        markerId: MarkerId(aula.nome),
-        position: LatLng(aula.latitude, aula.longitude),
-        icon: await BitmapDescriptor.fromAssetImage(
-            const ImageConfiguration(), 'lib/assets/app/aulas_icon.png'),
-        onTap: () => {
-          showModalBottomSheet(
-              context: appKey.currentState!.context,
-              builder: (context) => AulaBottomSheet(aula: aula))
-        },
-        // Comentado em favor do uso do BottomSheet 27/04/2024
-        // infoWindow: InfoWindow(
-        //   title: aula.nome,
-        //   snippet: aula.descricao,
-        // ),
-      ));
+      if (aula.latitude != 0.0 && aula.longitude != 0.0) {
+        markers.add(Marker(
+          markerId: MarkerId(aula.nome),
+          position: LatLng(aula.latitude!, aula.longitude!),
+          icon: await BitmapDescriptor.fromAssetImage(
+              const ImageConfiguration(), 'lib/assets/app/aulas_icon.png'),
+          onTap: () => {
+            showModalBottomSheet(
+                context: appKey.currentState!.context,
+                builder: (context) => AulaBottomSheet(aula: aula))
+          },
+        ));
+      }
     });
 
     notifyListeners();

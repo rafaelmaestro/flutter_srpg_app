@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
-import 'package:flutter_srpg_app/models/posto.dart';
+import 'package:flutter_srpg_app/models/aula.dart';
 import 'package:flutter_srpg_app/pages/camera/camera_page.dart';
 import 'package:flutter_srpg_app/pages/evento/evento_aluno_page.dart';
 import 'package:flutter_srpg_app/services/data_service.dart';
@@ -12,7 +12,7 @@ import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class AulaBottomSheet extends StatefulWidget {
-  Aula aula;
+  Evento aula;
 
   AulaBottomSheet({super.key, required this.aula});
 
@@ -64,13 +64,17 @@ class _AulaBottomSheetState extends State<AulaBottomSheet> {
               padding: const EdgeInsets.only(bottom: 24),
               child: Text(widget.aula.descricao),
             ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Text('Local: ${widget.aula.local}'),
+            ),
             Text(DataService().calcularDuracaoEventoEmHoras(
                 widget.aula.dataInicio, DateTime.now())),
             Text('Você está a ${LocalizacaoService().calcularDistancia(
               {'latitude': local.lat, 'longitude': local.long, 'elevacao': 0},
               {
-                'latitude': widget.aula.latitude,
-                'longitude': widget.aula.longitude,
+                'latitude': widget.aula.latitude!,
+                'longitude': widget.aula.longitude!,
                 'elevacao': 0
               },
             )}km de distância desse evento.'), // Novo texto adicionado

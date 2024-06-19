@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
         title: const Column(
           children: [
             Text(
-              'Minha localização',
+              'Minha Localização',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 22,

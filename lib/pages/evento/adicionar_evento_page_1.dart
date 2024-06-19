@@ -1,5 +1,6 @@
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_srpg_app/models/aula.dart';
 import 'package:flutter_srpg_app/pages/evento/adicionar_evento_page_2.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
@@ -16,6 +17,8 @@ class AdicionarEventoPage1 extends StatefulWidget {
 class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
   var pergunta = 1;
   final _formKey = GlobalKey<FormState>();
+  TextEditingController nomeController = TextEditingController();
+  TextEditingController descricaoController = TextEditingController();
   TextEditingController localController = TextEditingController();
 
   @override
@@ -90,7 +93,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                               label: "Nome",
                               placeholder: "Insira o nome do seu evento",
                               onChange: (value) {
-                                // emailController.text = value;
+                                nomeController.text = value;
                               },
                               validateFunction: (value) {
                                 // if (value == null || value.isEmpty) {
@@ -108,7 +111,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                               label: "Descrição",
                               placeholder: "Insira uma descrição para o evento",
                               onChange: (value) {
-                                // emailController.text = value;
+                                descricaoController.text = value;
                               },
                               validateFunction: (value) {
                                 // if (value == null || value.isEmpty) {
@@ -133,6 +136,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                             const SizedBox(height: 20),
                             // ! Cópia do style dos inputs textuais
                             Container(
+                              // margin: EdgeInsets.only(left: 12, right: 12),
                               padding: const EdgeInsets.only(
                                   top: 20, left: 20, right: 20, bottom: 10),
                               decoration: BoxDecoration(
@@ -144,7 +148,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                   boxShadow: [
                                     BoxShadow(
                                       blurRadius: 32,
-                                      color: Colors.black.withOpacity(.1),
+                                      color: Colors.grey.withOpacity(.1),
                                     )
                                   ]),
                               child: Column(
@@ -152,13 +156,14 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                 children: [
                                   DateTimeField(
                                     decoration: const InputDecoration(
-                                        labelText: 'Data do Evento',
+                                        labelText: 'Data Início do Evento',
                                         labelStyle:
                                             TextStyle(color: Color(0xFF0A6D92)),
-                                        hintText: 'Selecione a data do evento',
+                                        hintText:
+                                            'Selecione a data de início do evento',
                                         border: InputBorder.none,
                                         prefixIcon: Icon(
-                                          Icons.calendar_today,
+                                          Icons.calendar_today_outlined,
                                           color: Color(0xFF0A6D92),
                                         ),
                                         errorStyle: TextStyle(
@@ -183,6 +188,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                             const SizedBox(height: 20),
                             // ! Cópia do style dos inputs textuais
                             Container(
+                              // margin: EdgeInsets.only(left: 12, right: 12),
                               padding: const EdgeInsets.only(
                                   top: 20, left: 20, right: 20, bottom: 10),
                               decoration: BoxDecoration(
@@ -194,7 +200,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                   boxShadow: [
                                     BoxShadow(
                                       blurRadius: 32,
-                                      color: Colors.black.withOpacity(.1),
+                                      color: Colors.grey.withOpacity(.1),
                                     )
                                   ]),
                               child: Column(
@@ -233,6 +239,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                             const SizedBox(height: 20),
                             // ! Cópia do style dos inputs textuais
                             Container(
+                              // margin: EdgeInsets.only(left: 12, right: 12),
                               padding: const EdgeInsets.only(
                                   top: 20, left: 20, right: 20, bottom: 10),
                               decoration: BoxDecoration(
@@ -244,7 +251,59 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                   boxShadow: [
                                     BoxShadow(
                                       blurRadius: 32,
-                                      color: Colors.black.withOpacity(.1),
+                                      color: Colors.grey.withOpacity(.1),
+                                    )
+                                  ]),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  DateTimeField(
+                                    decoration: const InputDecoration(
+                                        labelText: 'Data Fim do Evento',
+                                        labelStyle:
+                                            TextStyle(color: Color(0xFF0A6D92)),
+                                        hintText:
+                                            'Selecione a data de fim do evento',
+                                        border: InputBorder.none,
+                                        prefixIcon: Icon(
+                                          Icons.calendar_today,
+                                          color: Color(0xFF0A6D92),
+                                        ),
+                                        errorStyle: TextStyle(
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.bold),
+                                        contentPadding: EdgeInsets.all(8.0)),
+                                    format: DateFormat("yyyy-MM-dd"),
+                                    onShowPicker:
+                                        (context, currentValue) async {
+                                      final date = await showDatePicker(
+                                          context: context,
+                                          firstDate: DateTime(1900),
+                                          initialDate:
+                                              currentValue ?? DateTime.now(),
+                                          lastDate: DateTime(2100));
+                                      return date;
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            // ! Cópia do style dos inputs textuais
+                            Container(
+                              // margin: EdgeInsets.only(left: 12, right: 12),
+                              padding: const EdgeInsets.only(
+                                  top: 20, left: 20, right: 20, bottom: 10),
+                              decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      bottomLeft: Radius.circular(16),
+                                      bottomRight: Radius.circular(16)),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 32,
+                                      color: Colors.grey.withOpacity(.1),
                                     )
                                   ]),
                               child: Column(
@@ -359,7 +418,20 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    Evento aulaASerCriada = Evento(
+      nome: nomeController.text,
+      descricao: descricaoController.text,
+      dataInicio: DateTime.now(),
+      dataFim: DateTime.now(),
+      local: localController.text,
+      cpfOrganizador: '12345678900',
+      status: StatusAula.pendente,
+    );
+
     // TODO: Seguir p/ pagina 2 de cadastro de evento
-    Get.to(() => const AdicionarEventoPage2());
+    Get.to(() => AdicionarEventoPage2(
+          aulaASerCriada: aulaASerCriada,
+        ));
   }
 }

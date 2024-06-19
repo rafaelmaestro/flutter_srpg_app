@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_srpg_app/models/aula.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class AdicionarEventoPage2 extends StatefulWidget {
-  const AdicionarEventoPage2({super.key});
+  Evento aulaASerCriada;
+  AdicionarEventoPage2({super.key, required this.aulaASerCriada});
 
   @override
   _EventoAlunoPageState createState() => _EventoAlunoPageState();
@@ -298,6 +300,10 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
       );
     }
 
+    listController.forEach((element) {
+      widget.aulaASerCriada.adicionarConvidado(element.text);
+    });
+
     // TODO: Requisição p/ backend criar evento
     showDialog(
       context: context,
@@ -312,6 +318,17 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
         );
       },
     );
+
+    print('Aula será criada com os seguintes parâmetros:');
+    print('Nome: ${widget.aulaASerCriada.nome}');
+    print('Descrição: ${widget.aulaASerCriada.descricao}');
+    print('Data de início: ${widget.aulaASerCriada.dataInicio}');
+    print('Data de fim: ${widget.aulaASerCriada.dataFim}');
+    print('Local: ${widget.aulaASerCriada.local}');
+    print('Latitude: ${widget.aulaASerCriada.latitude}');
+    print('Longitude: ${widget.aulaASerCriada.longitude}');
+    print('CPF do organizador: ${widget.aulaASerCriada.cpfOrganizador}');
+    print('Convidados: ${widget.aulaASerCriada.convidados}');
 
     // Simulate a network request delay of 5 seconds.
     await Future.delayed(const Duration(seconds: 5));
