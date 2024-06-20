@@ -88,7 +88,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
                           children: [
                             const Center(
                               child: Text(
-                                'Quem você deseja convidar? 🤔',
+                                'Quem você deseja convidar?',
                                 style: TextStyle(
                                   fontSize: 22,
                                   color: Colors.black,
@@ -102,7 +102,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
                                   top: 20, left: 20, right: 20, bottom: 10),
                               decoration: BoxDecoration(
                                   border: Border.all(
-                                    color: const Color(0xFF0A6D92),
+                                    color: Colors.grey.withOpacity(.1),
                                   ),
                                   color: Colors.white,
                                   borderRadius: const BorderRadius.only(

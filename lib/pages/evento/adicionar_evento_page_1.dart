@@ -83,7 +83,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                           children: [
                             const Center(
                               child: Text(
-                                'O que você quer organizar? 🏫',
+                                'O que você quer organizar?',
                                 style: TextStyle(
                                     fontSize: 22, color: Colors.black),
                               ),
@@ -128,7 +128,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                             const SizedBox(height: 20),
                             const Center(
                               child: Text(
-                                'Quando vai acontecer? 📅',
+                                'Quando vai acontecer?',
                                 style: TextStyle(
                                     fontSize: 22, color: Colors.black),
                               ),
@@ -140,6 +140,8 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                               padding: const EdgeInsets.only(
                                   top: 20, left: 20, right: 20, bottom: 10),
                               decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.grey.withOpacity(.1)),
                                   color: Colors.white,
                                   borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(16),
@@ -192,6 +194,8 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                               padding: const EdgeInsets.only(
                                   top: 20, left: 20, right: 20, bottom: 10),
                               decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.grey.withOpacity(.1)),
                                   color: Colors.white,
                                   borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(16),
@@ -243,6 +247,8 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                               padding: const EdgeInsets.only(
                                   top: 20, left: 20, right: 20, bottom: 10),
                               decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.grey.withOpacity(.1)),
                                   color: Colors.white,
                                   borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(16),
@@ -295,6 +301,8 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                               padding: const EdgeInsets.only(
                                   top: 20, left: 20, right: 20, bottom: 10),
                               decoration: BoxDecoration(
+                                  border: Border.all(
+                                      color: Colors.grey.withOpacity(.1)),
                                   color: Colors.white,
                                   borderRadius: const BorderRadius.only(
                                       topLeft: Radius.circular(16),
@@ -342,7 +350,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                             const SizedBox(height: 20),
                             const Center(
                               child: Text(
-                                'Onde será o evento? 📍',
+                                'Onde será o evento?',
                                 style: TextStyle(
                                     fontSize: 22, color: Colors.black),
                               ),

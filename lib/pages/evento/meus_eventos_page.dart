@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/models/aula.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
+import 'package:flutter_srpg_app/widgets/evento_card.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 
 class MeusEventosPage extends StatefulWidget {
@@ -14,8 +15,8 @@ class MeusEventosPage extends StatefulWidget {
 
 class _MeusEventosPageState extends State<MeusEventosPage> {
   String searchQuery = '';
-  bool isOrganizadosChecked = false;
-  bool isConvidadosChecked = false;
+  bool isOrganizadosChecked = true;
+  bool isConvidadosChecked = true;
   bool isFiltered = false;
 
   @override
@@ -166,23 +167,24 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
                   physics: const BouncingScrollPhysics(),
                   child: Column(
                     children: [
-                      ...widget.eventosOrganizados.map((evento) {
-                        return Card(
-                          child: ListTile(
-                            title: Text(evento.nome),
-                            subtitle: Text('Organizador'),
-                            // Adicione mais detalhes do evento aqui
-                          ),
-                        );
-                      }).toList(),
-                      ...widget.eventosConvidado.map((evento) {
-                        return Card(
-                          child: ListTile(
-                            title: Text(evento.nome),
-                            // Adicione mais detalhes do evento aqui
-                          ),
-                        );
-                      }).toList(),
+                      ..._handleElementosExibidos(),
+                      // ...widget.eventosOrganizados.map((evento) {
+                      //   return Card(
+                      //     child: ListTile(
+                      //       title: Text(evento.nome),
+                      //       subtitle: Text('Organizador'),
+                      //       // Adicione mais detalhes do evento aqui
+                      //     ),
+                      //   );
+                      // }).toList(),
+                      // ...widget.eventosConvidado.map((evento) {
+                      //   return Card(
+                      //     child: ListTile(
+                      //       title: Text(evento.nome),
+                      //       // Adicione mais detalhes do evento aqui
+                      //     ),
+                      //   );
+                      // }).toList(),
                     ],
                   )),
             ),
@@ -191,6 +193,83 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
       ),
       bottomNavigationBar: const SRPGNavigationBar(),
     );
+  }
+
+  _handleElementosExibidos() {
+    List<Widget> elementosExibidos = [];
+
+    if (widget.eventosOrganizados.isEmpty && widget.eventosConvidado.isEmpty) {
+      return elementosExibidos.add(
+        const Center(
+          child: Text(
+            'Nenhum evento encontrado',
+            style: TextStyle(fontSize: 16),
+          ),
+        ),
+      );
+    }
+
+    if (isFiltered) {
+      if (isOrganizadosChecked && isConvidadosChecked) {
+        elementosExibidos.addAll(
+          widget.eventosOrganizados.map((evento) {
+            return Card(
+              child: ListTile(
+                title: Text(evento.nome),
+                subtitle: Text('Organizador'),
+                // Adicione mais detalhes do evento aqui
+              ),
+            );
+          }).toList(),
+        );
+        elementosExibidos.addAll(
+          widget.eventosConvidado.map((evento) {
+            return Card(
+              child: ListTile(
+                title: Text(evento.nome),
+                // Adicione mais detalhes do evento aqui
+              ),
+            );
+          }).toList(),
+        );
+      } else if (isOrganizadosChecked) {
+        elementosExibidos.addAll(
+          widget.eventosOrganizados.map((evento) {
+            return Card(
+              child: ListTile(
+                title: Text(evento.nome),
+                subtitle: Text('Organizador'),
+                // Adicione mais detalhes do evento aqui
+              ),
+            );
+          }).toList(),
+        );
+      } else if (isConvidadosChecked) {
+        elementosExibidos.addAll(
+          widget.eventosConvidado.map((evento) {
+            return Card(
+              child: ListTile(
+                title: Text(evento.nome),
+                // Adicione mais detalhes do evento aqui
+              ),
+            );
+          }).toList(),
+        );
+      }
+    } else {
+      elementosExibidos.addAll(
+        widget.eventosOrganizados.map((evento) {
+          return EventoCard(evento: evento, isOrganizador: true);
+        }).toList(),
+      );
+      elementosExibidos.addAll(
+        widget.eventosConvidado.map((evento) {
+          return EventoCard(evento: evento, isOrganizador: false);
+        }).toList(),
+      );
+    }
+
+    return elementosExibidos;
   }
 
   _showCloseFilterIcon() {
@@ -227,6 +306,7 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
               });
             },
             controlAffinity: ListTileControlAffinity.leading,
+            activeColor: Color(0xFF0A6D92),
           ),
         ),
         CheckboxListTile(
@@ -241,6 +321,7 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
             });
           },
           controlAffinity: ListTileControlAffinity.leading,
+          activeColor: Color(0xFF0A6D92),
         )
       ];
     } else {

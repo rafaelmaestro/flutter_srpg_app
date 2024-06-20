@@ -10,8 +10,10 @@ final eventosMock = [
     'descricao': 'Turma 0004729A / 19h - 23h',
     'latitude': -22.350808540575265,
     'longitude': -49.03217930003996,
-    'dataInicio': DateTime.now().subtract(const Duration(hours: 2)),
-    'dataFim': DateTime.now().add(const Duration(hours: 4)),
+    'dataInicio': DateTime(
+        DateTime.now().year, DateTime.now().month, DateTime.now().day, 19, 0),
+    'dataFim': DateTime(
+        DateTime.now().year, DateTime.now().month, DateTime.now().day, 23, 0),
     'local': 'Bloco A - Sala 4',
     'cpfOrganizador': '12345678909',
   },
@@ -40,8 +42,10 @@ class EventoRepository extends ChangeNotifier {
       descricao: 'Turma 0004729A / 19h - 23h',
       latitude: -22.350808540575265,
       longitude: -49.03217930003996,
-      dataInicio: DateTime.now().subtract(const Duration(hours: 4)),
-      dataFim: DateTime.now().add(const Duration(hours: 4)),
+      dataInicio: DateTime(
+          DateTime.now().year, DateTime.now().month, DateTime.now().day, 19, 0),
+      dataFim: DateTime(
+          DateTime.now().year, DateTime.now().month, DateTime.now().day, 23, 0),
       local: 'Bloco A - Sala 4',
       cpfOrganizador: '12345678909',
     )

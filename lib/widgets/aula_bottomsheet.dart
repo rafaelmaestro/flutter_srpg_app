@@ -70,6 +70,8 @@ class _AulaBottomSheetState extends State<AulaBottomSheet> {
             ),
             Text(DataService().calcularDuracaoEventoEmHoras(
                 widget.aula.dataInicio, DateTime.now())),
+            Text(DataService().calcularTerminoEventoEmHoras(
+                widget.aula.dataFim, DateTime.now())),
             Text('Você está a ${LocalizacaoService().calcularDistancia(
               {'latitude': local.lat, 'longitude': local.long, 'elevacao': 0},
               {
