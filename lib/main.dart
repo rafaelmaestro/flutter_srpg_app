@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/pages/cadastro/cadastro_page_1.dart';
+import 'package:flutter_srpg_app/pages/evento/historico_eventos_page.dart';
 import 'package:flutter_srpg_app/pages/evento/meus_eventos_page.dart';
+import 'package:flutter_srpg_app/pages/evento/perfil_page.dart';
 import 'package:flutter_srpg_app/pages/login/home_page.dart';
 import 'package:flutter_srpg_app/pages/login/login_page.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
@@ -36,7 +38,9 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/', page: () => const LogIn()),
           GetPage(name: '/home', page: () => const HomePage()),
           GetPage(name: '/cadastrar', page: () => const CadastroPage1()),
-          GetPage(name: '/meus-eventos', page: () => MeusEventosPage())
+          GetPage(name: '/meus-eventos', page: () => MeusEventosPage()),
+          GetPage(name: '/historico', page: () => HistoricoEventosPage()),
+          GetPage(name: '/perfil', page: () => PerfilPage())
         ],
       ),
     );

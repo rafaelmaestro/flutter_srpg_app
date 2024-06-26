@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/pages/login/home_page.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
-import 'package:flutter_srpg_app/widgets/aula_bottomsheet.dart';
+import 'package:flutter_srpg_app/widgets/evento_checkin_bottomsheet.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -36,7 +36,7 @@ class PosicaoController extends ChangeNotifier {
           onTap: () => {
             showModalBottomSheet(
                 context: appKey.currentState!.context,
-                builder: (context) => AulaBottomSheet(aula: aula))
+                builder: (context) => EventoCheckInBottomSheet(aula: aula))
           },
         ));
       }

@@ -5,7 +5,7 @@ final eventosMock = [
   {
     'organizador': true,
     'nome': 'Aula de Gestão de TI',
-    'status': StatusAula.emAndamento,
+    'status': StatusAula.pendente,
     'convidados': ['rafael.maestro@unesp.br'],
     'descricao': 'Turma 0004729A / 19h - 23h',
     'latitude': -22.350808540575265,

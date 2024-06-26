@@ -51,7 +51,7 @@ class _SRPGNavigationBarState extends State<SRPGNavigationBar> {
                         color: Colors.white,
                       ),
                       onPressed: () {
-                        print('Person Button pressed!');
+                        Get.toNamed('/historico');
                       },
                     ),
                     IconButton(
@@ -60,7 +60,7 @@ class _SRPGNavigationBarState extends State<SRPGNavigationBar> {
                         color: Colors.white,
                       ),
                       onPressed: () {
-                        print('Person Button pressed!');
+                        Get.toNamed('/perfil');
                       },
                     ),
                   ],

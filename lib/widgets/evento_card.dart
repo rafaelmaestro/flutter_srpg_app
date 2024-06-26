@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/models/aula.dart';
 import 'package:flutter_srpg_app/pages/login/home_page.dart';
-import 'package:flutter_srpg_app/widgets/aula_bottomsheet.dart';
+import 'package:flutter_srpg_app/widgets/evento_checkin_bottomsheet.dart';
+import 'package:flutter_srpg_app/widgets/evento_iniciar_bottomsheet.dart';
 import 'package:intl/intl.dart';
 
 // Card(
@@ -62,7 +63,15 @@ class EventoCard extends StatelessWidget {
                 {
                   showModalBottomSheet(
                       context: appKey.currentState!.context,
-                      builder: (context) => AulaBottomSheet(aula: evento))
+                      builder: (context) =>
+                          EventoCheckInBottomSheet(aula: evento))
+                }
+              else if (evento.status == StatusAula.pendente && isOrganizador)
+                {
+                  showModalBottomSheet(
+                      context: appKey.currentState!.context,
+                      builder: (context) =>
+                          EventoIniciarBottomSheet(aula: evento))
                 }
             },
             // Adicione mais detalhes do evento aqui

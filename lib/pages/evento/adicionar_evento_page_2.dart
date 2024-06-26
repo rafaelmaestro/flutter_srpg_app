@@ -206,8 +206,8 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
                               children: [
                                 SizedBox(height: 20),
                                 Icon(
-                                  Icons.looks_one_sharp,
-                                  color: Color(0xFF0A6D92),
+                                  Icons.check_box,
+                                  color: Colors.green,
                                 ),
                                 Icon(
                                   Icons.looks_two_outlined,

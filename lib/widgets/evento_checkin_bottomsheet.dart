@@ -11,16 +11,17 @@ import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
-class AulaBottomSheet extends StatefulWidget {
+class EventoCheckInBottomSheet extends StatefulWidget {
   Evento aula;
 
-  AulaBottomSheet({super.key, required this.aula});
+  EventoCheckInBottomSheet({super.key, required this.aula});
 
   @override
-  _AulaBottomSheetState createState() => _AulaBottomSheetState();
+  _EventoCheckInBottomSheetState createState() =>
+      _EventoCheckInBottomSheetState();
 }
 
-class _AulaBottomSheetState extends State<AulaBottomSheet> {
+class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
   XFile arquivo = XFile('');
   LocalizacaoService service = LocalizacaoService();
   bool isButtonClicked = false;

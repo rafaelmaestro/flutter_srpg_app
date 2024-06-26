@@ -4,16 +4,17 @@ import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/evento_card.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 
-class MeusEventosPage extends StatefulWidget {
-  MeusEventosPage({super.key});
+class HistoricoEventosPage extends StatefulWidget {
+  HistoricoEventosPage({super.key});
   List<Evento> eventosOrganizados = [];
   List<Evento> eventosConvidado = [];
 
   @override
-  _MeusEventosPageState createState() => _MeusEventosPageState();
+  _HistoricoEventosPageState createState() => _HistoricoEventosPageState();
 }
 
-class _MeusEventosPageState extends State<MeusEventosPage> {
+class _HistoricoEventosPageState extends State<HistoricoEventosPage> {
+  // TODO: provavelmente vai buscar uma query no backend que vai trazer mais dados além dos dados básicos de eventos
   String searchQuery = '';
   bool isOrganizadosChecked = true;
   bool isConvidadosChecked = true;
@@ -81,7 +82,7 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
         title: const Column(
           children: [
             Text(
-              'Meus Eventos',
+              'Histórico',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 22,
@@ -184,7 +185,7 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
       return elementosExibidos.add(
         const Center(
           child: Text(
-            'Nenhum evento encontrado',
+            'Parece que você ainda não criou ou foi convidado para nenhum evento.',
             style: TextStyle(fontSize: 16),
           ),
         ),
