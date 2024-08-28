@@ -2,9 +2,11 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/pages/cadastro/cadastro_page_1.dart';
 import 'package:flutter_srpg_app/pages/login/esqueceu_senha_page.dart';
+import 'package:flutter_srpg_app/repositories/login_repository.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
@@ -16,6 +18,7 @@ class LogIn extends StatefulWidget {
 class _LogInState extends State<LogIn> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  final LoginRepository loginRepository = LoginRepository();
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -206,23 +209,68 @@ class _LogInState extends State<LogIn> {
         ));
   }
 
-  _handleLogin() {
+  _handleLogin() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
-    // TODO: Implementar a lógica de login
-    print("Email: ${emailController.text}");
-    print("Senha: ${passwordController.text}");
-    // TODO: substituir o nome do usuário
-    Fluttertoast.showToast(
-        msg: 'Bem vindo de volta, Rafael! 🎉',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.TOP,
-        timeInSecForIosWeb: 5,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        fontSize: 16.0);
-    Get.toNamed('/home');
+
+    final cpf = emailController.text;
+    final senha = passwordController.text;
+
+    final response = await loginRepository.login(cpf, senha);
+
+    if (response.code == 200) {
+      final accessToken = response.accessToken;
+
+      if (accessToken == null) {
+        Fluttertoast.showToast(
+            msg:
+                'Parece que houve um erro ao tentar fazer login. Tente novamente.',
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.TOP,
+            timeInSecForIosWeb: 10,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        return;
+      }
+
+      final prefs = await SharedPreferences.getInstance();
+      final nomeCompleto = prefs.getString('nome');
+      final nomeUsuario = nomeCompleto?.split(' ')[0] ?? nomeCompleto;
+
+      Fluttertoast.showToast(
+          msg: 'Bem vindo de volta, $nomeUsuario! 🎉',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 10,
+          backgroundColor: Colors.green,
+          textColor: Colors.white,
+          fontSize: 16.0);
+
+      Get.toNamed('/home');
+    } else {
+      if (response.error != null) {
+        Fluttertoast.showToast(
+            msg: response.error!,
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.TOP,
+            timeInSecForIosWeb: 10,
+            backgroundColor: Colors.red,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        return;
+      }
+
+      Fluttertoast.showToast(
+          msg: 'Falha no login. Verifique suas credenciais.',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.TOP,
+          timeInSecForIosWeb: 10,
+          backgroundColor: Colors.red,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    }
   }
 
   _handleCadastrar() {

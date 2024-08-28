@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_config/flutter_config.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/pages/cadastro/cadastro_page_1.dart';
 import 'package:flutter_srpg_app/pages/evento/historico_eventos_page.dart';
@@ -10,7 +11,9 @@ import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterConfig.loadEnvVariables();
   runApp(const MyApp());
 }
 
