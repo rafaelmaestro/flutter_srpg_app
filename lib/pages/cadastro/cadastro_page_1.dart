@@ -16,6 +16,9 @@ class CadastroPage1 extends StatefulWidget {
 class _CadastroPage1State extends State<CadastroPage1> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
+  TextEditingController nomeController = TextEditingController();
+  TextEditingController cpfController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -91,14 +94,12 @@ class _CadastroPage1State extends State<CadastroPage1> {
                                 label: "Nome",
                                 placeholder: "Insira seu nome completo",
                                 onChange: (value) {
-                                  // this.emailController.text = value;
+                                  nomeController.text = value;
                                 },
                                 validateFunction: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Por favor, insira seu nome completo';
                                   }
-
-                                  //caracteres especiais
                                   return null;
                                 },
                                 prefixIcon: const Icon(
@@ -134,7 +135,7 @@ class _CadastroPage1State extends State<CadastroPage1> {
                                 label: "CPF",
                                 placeholder: "Insira seu CPF",
                                 onChange: (value) {
-                                  emailController.text = value;
+                                  cpfController.text = value;
                                 },
                                 validateFunction: (value) {
                                   if (value == null || value.isEmpty) {
@@ -180,7 +181,7 @@ class _CadastroPage1State extends State<CadastroPage1> {
                                 label: "Confirme sua senha",
                                 placeholder: "Insira sua senha novamente",
                                 onChange: (value) {
-                                  passwordController.text = value;
+                                  confirmPasswordController.text = value;
                                 },
                                 validateFunction: (value) {
                                   if (value == null || value.isEmpty) {
@@ -249,8 +250,15 @@ class _CadastroPage1State extends State<CadastroPage1> {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    final usuario = {
+      'nome': nomeController.text,
+      'email': emailController.text,
+      'cpf': cpfController.text,
+      'senha': passwordController.text,
+    };
+
     // TODO: Seguir para página 2
-    // TODO: Criar um controller para armazenar os dados do usuário
-    Get.to(() => const CadastroPage2());
+    Get.to(() => CadastroPage2(usuario: usuario));
   }
 }

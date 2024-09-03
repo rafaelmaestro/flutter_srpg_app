@@ -4,7 +4,6 @@ import 'package:flutter_srpg_app/pages/cadastro/cadastro_page_1.dart';
 import 'package:flutter_srpg_app/pages/login/esqueceu_senha_page.dart';
 import 'package:flutter_srpg_app/repositories/login_repository.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -165,7 +164,7 @@ class _LogInState extends State<LogIn> {
                                         color: Color(0xFF0A6D92)),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        _handleCadastrar();
+                                        handleCadastrar();
                                       },
                                   ),
                                 ],
@@ -191,7 +190,7 @@ class _LogInState extends State<LogIn> {
                                         color: Color(0xFF0A6D92)),
                                     recognizer: TapGestureRecognizer()
                                       ..onTap = () {
-                                        _handleEsqueceuSenha();
+                                        handleEsqueceuSenha();
                                       },
                                   ),
                                 ],
@@ -223,15 +222,21 @@ class _LogInState extends State<LogIn> {
       final accessToken = response.accessToken;
 
       if (accessToken == null) {
-        Fluttertoast.showToast(
-            msg:
-                'Parece que houve um erro ao tentar fazer login. Tente novamente.',
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.TOP,
-            timeInSecForIosWeb: 10,
-            backgroundColor: Colors.red,
-            textColor: Colors.white,
-            fontSize: 16.0);
+        Get.snackbar(
+          'Falha no login! 😢',
+          response.error ??
+              'Erro desconhecido ao realizar login! \n Por favor, verifique suas credenciais e tente novamente, ou entre em contato com o suporte em 📞 4002-8922',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 10),
+          showProgressIndicator: true,
+          progressIndicatorBackgroundColor: Colors.red,
+          progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+            Colors.white,
+          ),
+          isDismissible: true,
+        );
         return;
       }
 
@@ -239,45 +244,46 @@ class _LogInState extends State<LogIn> {
       final nomeCompleto = prefs.getString('nome');
       final nomeUsuario = nomeCompleto?.split(' ')[0] ?? nomeCompleto;
 
-      Fluttertoast.showToast(
-          msg: 'Bem vindo de volta, $nomeUsuario! 🎉',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.TOP,
-          timeInSecForIosWeb: 10,
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-          fontSize: 16.0);
+      Get.snackbar(
+        'Bem vindo de volta, $nomeUsuario! 🎉',
+        'Você está logado e pronto para usar o SRPG!',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.green,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
 
-      Get.toNamed('/home');
+      Get.offNamed('/home');
     } else {
-      if (response.error != null) {
-        Fluttertoast.showToast(
-            msg: response.error!,
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.TOP,
-            timeInSecForIosWeb: 10,
-            backgroundColor: Colors.red,
-            textColor: Colors.white,
-            fontSize: 16.0);
-        return;
-      }
-
-      Fluttertoast.showToast(
-          msg: 'Falha no login. Verifique suas credenciais.',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.TOP,
-          timeInSecForIosWeb: 10,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0);
+      Get.snackbar(
+        'Falha no login! 😢',
+        response.error ??
+            'Erro desconhecido ao realizar login! \n Por favor, verifique suas credenciais e tente novamente, ou entre em contato com o suporte em 📞 4002-8922',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
     }
   }
 
-  _handleCadastrar() {
+  handleCadastrar() {
     Get.to(() => const CadastroPage1());
   }
 
-  _handleEsqueceuSenha() {
+  handleEsqueceuSenha() {
     Get.to(() => const EsqueceuSenhaPage());
   }
 }

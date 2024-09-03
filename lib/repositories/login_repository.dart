@@ -3,6 +3,20 @@ import 'package:flutter_config/flutter_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+class HttpResponse {
+  final int code;
+  final String? error;
+
+  HttpResponse({required this.code, this.error});
+
+  factory HttpResponse.fromJson(Map<String, dynamic> json) {
+    return HttpResponse(
+      code: json['code'],
+      error: json['error'],
+    );
+  }
+}
+
 class LoginResponse {
   final int code;
   final String? accessToken;
@@ -110,6 +124,47 @@ class LoginRepository {
       return GetMeResponse.fromJson({
         'code': response.statusCode,
         'error': responseData['message'],
+      });
+    }
+  }
+
+  Future<HttpResponse> signUp(
+      String cpf, String nome, String email, String senha, String foto) async {
+    final response = await http.post(
+      Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/usuario'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'cpf': cpf,
+        'nome': nome,
+        'email': email,
+        'senha': senha,
+        'foto': foto,
+      }),
+    );
+
+    final responseData = jsonDecode(response.body);
+
+    print('Response: ${responseData['message']}');
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      print('Usuário cadastrado com sucesso ${response.statusCode}');
+      return HttpResponse.fromJson({
+        'code': response.statusCode,
+        'error': null,
+      });
+    } else {
+      String errorMessage;
+      if (responseData['message'] is List) {
+        errorMessage = (responseData['message'] as List).join('\n');
+      } else {
+        errorMessage = responseData['message'] ?? 'Erro ao cadastrar usuário!';
+      }
+
+      return HttpResponse.fromJson({
+        'code': response.statusCode,
+        'error': errorMessage,
       });
     }
   }

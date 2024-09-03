@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/pages/camera/camera_page.dart';
+import 'package:flutter_srpg_app/repositories/login_repository.dart';
 import 'package:get/get.dart';
 
 // cpf
@@ -9,7 +13,9 @@ import 'package:get/get.dart';
 // foto
 // senha
 class CadastroPage2 extends StatefulWidget {
-  const CadastroPage2({super.key});
+  final Map<String, String> usuario;
+
+  const CadastroPage2({super.key, required this.usuario});
 
   @override
   _CadastroPage2State createState() => _CadastroPage2State();
@@ -17,6 +23,7 @@ class CadastroPage2 extends StatefulWidget {
 
 class _CadastroPage2State extends State<CadastroPage2> {
   XFile arquivo = XFile('');
+  final LoginRepository loginRepository = LoginRepository();
 
   @override
   void initState() {
@@ -177,16 +184,65 @@ class _CadastroPage2State extends State<CadastroPage2> {
   }
 
   _handleCadastroBiometria() async {
-    var fotoBiometria = await Get.off(const CameraPage());
+    var fotoBiometria = await Get.to(const CameraPage());
 
     if (fotoBiometria != null) {
-      // Adicione a lógica de envio da foto para o servidor
-      print(fotoBiometria);
       setState(() {
         arquivo = fotoBiometria;
       });
 
+      final bytes = await File(arquivo.path).readAsBytes();
+
+      // Converta os bytes para uma string base64
+      final base64Image = base64Encode(bytes);
+
+      print('Cpf ${widget.usuario['cpf']}');
+      print('Nome ${widget.usuario['nome']}');
+      print('Email ${widget.usuario['email']}');
+      print('Senha ${widget.usuario['senha']}');
+
       // TODO: chamar o backend para cadastrar o usuário
+      final response = await loginRepository.signUp(
+        widget.usuario['cpf'] ?? '',
+        widget.usuario['nome'] ?? '',
+        widget.usuario['email'] ?? '',
+        widget.usuario['senha'] ?? '',
+        '', // TODO: alterar para base64Image para enviar foto de biometria capturada
+      );
+
+      if (response.code == 201) {
+        Get.snackbar(
+          'Deu tudo certo! 😁',
+          'Você está cadastrado e já pode acessar o sistema!',
+          backgroundColor: Colors.green,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 10),
+          showProgressIndicator: true,
+          progressIndicatorBackgroundColor: Colors.green,
+          progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+            Colors.white,
+          ),
+          isDismissible: true,
+        );
+        Get.offAllNamed('/login');
+      } else {
+        Get.snackbar(
+          'Erro ao realizar cadastro! 😢',
+          response.error ??
+              'Erro desconhecido ao cadastrar usuário, tente novamente mais tarde ou entre em contato com o suporte em 4002-8922',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 10),
+          showProgressIndicator: true,
+          progressIndicatorBackgroundColor: Colors.red,
+          progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+            Colors.white,
+          ),
+          isDismissible: true,
+        );
+      }
     }
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/models/aula.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
@@ -30,9 +29,9 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
   @override
   void dispose() {
     super.dispose();
-    listController.forEach((element) {
+    for (var element in listController) {
       element.dispose();
-    });
+    }
 
     inputEmailController.dispose();
   }
@@ -126,20 +125,19 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
                                       return null;
                                     },
                                     controller: inputEmailController,
-                                    decoration: InputDecoration(
+                                    decoration: const InputDecoration(
                                         prefixIcon: Icon(Icons.person,
-                                            color: const Color(0xFF0A6D92)),
-                                        labelText: "Convidado",
-                                        labelStyle: const TextStyle(
                                             color: Color(0xFF0A6D92)),
+                                        labelText: "Convidado",
+                                        labelStyle:
+                                            TextStyle(color: Color(0xFF0A6D92)),
                                         hintText:
                                             "Digite o e-mail do convidado",
                                         border: InputBorder.none,
-                                        errorStyle: const TextStyle(
+                                        errorStyle: TextStyle(
                                             color: Colors.red,
                                             fontWeight: FontWeight.bold),
-                                        contentPadding:
-                                            const EdgeInsets.all(0)),
+                                        contentPadding: EdgeInsets.all(0)),
                                   ),
                                 ],
                               ),
@@ -168,24 +166,24 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
                             Center(
                               child: Text(
                                 '${listController.length} convidados:',
-                                style: TextStyle(
+                                style: const TextStyle(
                                   fontSize: 14,
                                 ),
                               ),
                             ),
-                            SizedBox(height: 20),
+                            const SizedBox(height: 20),
                             Column(
                               children:
                                   List.generate(listController.length, (index) {
                                 return Card(
                                   child: ListTile(
-                                    leading: Icon(
+                                    leading: const Icon(
                                       Icons.person,
                                       color: Color(0xFF0A6D92),
                                     ),
                                     title: Text(listController[index].text),
                                     trailing: IconButton(
-                                      icon: Icon(
+                                      icon: const Icon(
                                         Icons.remove_circle,
                                         color: Colors.red,
                                       ),
@@ -262,7 +260,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
   }
 
   _handleCriarEvento() async {
-    if (listController.length == 0) {
+    if (listController.isEmpty) {
       return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -300,9 +298,9 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
       );
     }
 
-    listController.forEach((element) {
+    for (var element in listController) {
       widget.aulaASerCriada.adicionarConvidado(element.text);
-    });
+    }
 
     // TODO: Requisição p/ backend criar evento
     showDialog(
@@ -333,16 +331,20 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
     // Simulate a network request delay of 5 seconds.
     await Future.delayed(const Duration(seconds: 5));
 
-    Fluttertoast.showToast(
-        msg:
-            "Evento criado com sucesso! 🎉 Agora é só esperar seus convidados no dia do evento! 📍",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.TOP,
-        timeInSecForIosWeb: 10,
-        backgroundColor: Colors.green,
-        textColor: Colors.white,
-        fontSize: 16.0);
-// After the delay, you can close the dialog.
+    Get.snackbar(
+      'Evento criado com sucesso! 🎉',
+      'Agora é só esperar seus convidados no dia do evento! 📍',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 10),
+      showProgressIndicator: true,
+      progressIndicatorBackgroundColor: Colors.green,
+      progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+        Colors.white,
+      ),
+      isDismissible: true,
+    );
 
     Get.offNamed('/home');
   }

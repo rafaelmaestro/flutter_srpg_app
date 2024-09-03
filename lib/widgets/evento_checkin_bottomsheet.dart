@@ -6,7 +6,6 @@ import 'package:flutter_srpg_app/pages/camera/camera_page.dart';
 import 'package:flutter_srpg_app/pages/evento/evento_aluno_page.dart';
 import 'package:flutter_srpg_app/services/data_service.dart';
 import 'package:flutter_srpg_app/services/localizacao_service.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
@@ -127,28 +126,38 @@ class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
     Navigator.pop(context); // fecha o Dialog
 
     if (biometria == true) {
-      Fluttertoast.showToast(
-          msg:
-              "Check-in realizado com sucesso! 🎉 \n Por favor, permaneça no local do evento para que sua presença seja contabilizada! ✅",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.TOP,
-          timeInSecForIosWeb: 5,
-          backgroundColor: Colors.green,
-          textColor: Colors.white,
-          fontSize: 16.0);
+      Get.snackbar(
+        'Check-in realizado com sucesso! 🎉',
+        'Por favor, permaneça no local do evento para que sua presença seja contabilizada! ✅',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.green,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
 
       Get.to(() => const EventoAlunoPage());
     } else {
       // TODO: exibir mensagens de erro diferentes para cada tipo de erro
-      Fluttertoast.showToast(
-          msg:
-              "Erro ao realizar check-in! 😢 \n Por favor, tente novamente! 🔄",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.TOP,
-          timeInSecForIosWeb: 5,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0);
+      Get.snackbar(
+        'Erro ao realizar check-in! 😢',
+        'Erro desconhecido ao realizar check-in! \n Por favor, tente novamente mais tarde ou entre em contato com o suporte em 📞 4002-8922',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
 
       setState(() {
         isButtonClicked = false;
