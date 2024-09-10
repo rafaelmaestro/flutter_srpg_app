@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
-import 'package:flutter_srpg_app/models/aula.dart';
+import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/services/localizacao_service.dart';
 import 'package:provider/provider.dart';
 
@@ -52,7 +52,7 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
               text: TextSpan(
                 style: DefaultTextStyle.of(context)
                     .style, // Usa o estilo de texto padrão do contexto
-                children: <TextSpan>[
+                children: const <TextSpan>[
                   TextSpan(
                       text:
                           'Este evento está marcado para iniciar em: \n'), // Texto seguido de quebra de linha
@@ -66,8 +66,8 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
               ),
             ),
             const SizedBox(height: 16), // Espaçamento entre os textos
-            Text('A duração prevista é de: x horas.'),
-            Text('Este evento tem X convidados.'),
+            const Text('A duração prevista é de: x horas.'),
+            const Text('Este evento tem X convidados.'),
             Text('Você está a ${LocalizacaoService().calcularDistancia(
               {'latitude': local.lat, 'longitude': local.long, 'elevacao': 0},
               {

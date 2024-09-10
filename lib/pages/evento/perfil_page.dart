@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_srpg_app/models/aula.dart';
+import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 
 class PerfilPage extends StatefulWidget {
@@ -54,21 +54,21 @@ class _PerfilPageState extends State<PerfilPage> {
       body: Column(
         children: [
           const SizedBox(height: 20),
-          Center(
+          const Center(
             child: CircleAvatar(
               radius: 50, // Tamanho do avatar
               backgroundColor: Color(0xFF0A6D92),
               foregroundColor: Colors.white,
               child: Text(
                 'A', // TODO: Substitua 'A' pela primeira letra do nome do usuário
-                style: const TextStyle(fontSize: 32),
+                style: TextStyle(fontSize: 32),
               ),
             ),
           ),
           const SizedBox(height: 20),
-          Text(
+          const Text(
             'Nome do Usuário', // TODO: Substitua 'Nome do Usuário' pelo nome do usuário
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 24,
             ),
@@ -87,14 +87,14 @@ class _PerfilPageState extends State<PerfilPage> {
                   physics: const BouncingScrollPhysics(),
                   child: Column(
                     children: [
-                      Align(
+                      const Align(
                         alignment: Alignment.center,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 20),
+                          padding: EdgeInsets.only(left: 20),
                           child: Row(
                             mainAxisSize: MainAxisSize
                                 .min, // Minimiza a largura da Row ao conteúdo
-                            children: const [
+                            children: [
                               Text(
                                 'Informações Pessoais',
                                 style: TextStyle(
@@ -113,13 +113,14 @@ class _PerfilPageState extends State<PerfilPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      Text(
+                      const Text(
                         'CPF: 123.456.789-00', // TODO: Substitua '123.456.789-00' pelo CPF do usuário
                       ),
                       const SizedBox(height: 20),
-                      Text('E-mail: email-exemplo@email.com'),
+                      const Text('E-mail: email-exemplo@email.com'),
                       const SizedBox(height: 20),
-                      Text('Entrou em: 01/01/2021'), // TODO: Alterar valores
+                      const Text(
+                          'Entrou em: 01/01/2021'), // TODO: Alterar valores
                       const SizedBox(height: 20),
                       Divider(
                         color: Colors.grey.withOpacity(.3),
@@ -127,14 +128,14 @@ class _PerfilPageState extends State<PerfilPage> {
                         indent: 20,
                         endIndent: 20,
                       ),
-                      Align(
+                      const Align(
                         alignment: Alignment.center,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 20),
+                          padding: EdgeInsets.only(left: 20),
                           child: Row(
                             mainAxisSize: MainAxisSize
                                 .min, // Minimiza a largura da Row ao conteúdo
-                            children: const [
+                            children: [
                               Text(
                                 'Configurações',
                                 style: TextStyle(
@@ -156,7 +157,7 @@ class _PerfilPageState extends State<PerfilPage> {
                         onPressed: () {
                           // Adicione a lógica para alterar a foto de biometria
                         },
-                        child: Text(
+                        child: const Text(
                           'Alterar foto de biometria',
                           style: TextStyle(
                             color: Color(0xFF0A6D92),
@@ -167,14 +168,14 @@ class _PerfilPageState extends State<PerfilPage> {
                         onPressed: () {
                           // Adicione a lógica para alterar a foto de biometria
                         },
-                        child: Text('Alterar e-mail',
+                        child: const Text('Alterar e-mail',
                             style: TextStyle(color: Color(0xFF0A6D92))),
                       ),
                       TextButton(
                         onPressed: () {
                           // Adicione a lógica para alterar a senha
                         },
-                        child: Text('Alterar senha',
+                        child: const Text('Alterar senha',
                             style: TextStyle(color: Color(0xFF0A6D92))),
                       ),
                     ],

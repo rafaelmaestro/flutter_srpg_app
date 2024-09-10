@@ -1,6 +1,6 @@
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_srpg_app/models/aula.dart';
+import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/evento/adicionar_evento_page_2.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
@@ -430,11 +430,18 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
     Evento aulaASerCriada = Evento(
       nome: nomeController.text,
       descricao: descricaoController.text,
-      dataInicio: DateTime.now(),
-      dataFim: DateTime.now(),
+      checkOuts: CheckOuts(total: 0, emails: []),
+      convidados: Convidados(total: 0, emails: []),
+      dtInicio: DateTime.now(),
+      dtFim: DateTime.now(),
+      checkIns: CheckIns(total: 0, emails: []),
+      id: 'SDDSSDSDSD',
+      dataHora: DateTime.now(),
+      dtCriacao: DateTime.now(),
+      dtUltAtualizacao: DateTime.now(),
       local: localController.text,
       cpfOrganizador: '12345678900',
-      status: StatusAula.pendente,
+      status: 'PENDENTE',
     );
 
     // TODO: Seguir p/ pagina 2 de cadastro de evento

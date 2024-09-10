@@ -24,10 +24,15 @@ class PosicaoController extends ChangeNotifier {
     loadAulasBool == false ? addEventoMarker(LatLng(lat, long)) : null;
   }
 
-  loadAulas() {
-    final aulas = EventoRepository().aulas;
+  loadAulas() async {
+    final aulas = await EventoRepository().getAulas();
+
+    print(aulas.length);
+
     aulas.forEach((aula) async {
-      if (aula.latitude != 0.0 && aula.longitude != 0.0) {
+      print(aula.latitude);
+      print(aula.longitude);
+      if (aula.latitude != null && aula.longitude != null) {
         markers.add(Marker(
           markerId: MarkerId(aula.nome),
           position: LatLng(aula.latitude!, aula.longitude!),

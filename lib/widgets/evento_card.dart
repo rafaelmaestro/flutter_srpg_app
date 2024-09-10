@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_srpg_app/models/aula.dart';
+import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/login/home_page.dart';
 import 'package:flutter_srpg_app/widgets/evento_checkin_bottomsheet.dart';
 import 'package:flutter_srpg_app/widgets/evento_iniciar_bottomsheet.dart';
@@ -32,7 +32,7 @@ class EventoCard extends StatelessWidget {
     }
 
     return Container(
-      margin: EdgeInsets.only(left: 12, right: 12, top: 12),
+      margin: const EdgeInsets.only(left: 12, right: 12, top: 12),
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
       decoration: BoxDecoration(
           color: Colors.white,
@@ -52,21 +52,21 @@ class EventoCard extends StatelessWidget {
           ListTile(
             title: Text(evento.nome),
             subtitle: Text(
-                'Data: ${DateFormat('dd/MM/yyyy HH\'h\'mm').format(evento.dataInicio)}'),
+                'Data: ${DateFormat('dd/MM/yyyy HH\'h\'mm').format(evento.dtInicio ?? DateTime.now())}'),
             leading: CircleAvatar(
-              backgroundColor: Color(0xFF0A6D92),
+              backgroundColor: const Color(0xFF0A6D92),
               foregroundColor: Colors.white,
               child: Text(firstLetterAfterAulaDe.toUpperCase()),
             ),
             onTap: () => {
-              if (evento.status == StatusAula.emAndamento && !isOrganizador)
+              if (evento.status == 'EM ANDAMENTO' && !isOrganizador)
                 {
                   showModalBottomSheet(
                       context: appKey.currentState!.context,
                       builder: (context) =>
                           EventoCheckInBottomSheet(aula: evento))
                 }
-              else if (evento.status == StatusAula.pendente && isOrganizador)
+              else if (evento.status == 'PENDENTE' && isOrganizador)
                 {
                   showModalBottomSheet(
                       context: appKey.currentState!.context,
@@ -98,14 +98,14 @@ class EventoCard extends StatelessWidget {
             color: Colors.blue,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(
+          child: const Text(
             'Organizador',
             style: TextStyle(color: Colors.white),
           ),
         ),
       );
     }
-    if (evento.status == StatusAula.emAndamento) {
+    if (evento.status == 'EM ANDAMENTO') {
       tags.add(
         Container(
           padding: const EdgeInsets.all(4),
@@ -113,13 +113,13 @@ class EventoCard extends StatelessWidget {
             color: Colors.green,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(
+          child: const Text(
             'Em andamento',
             style: TextStyle(color: Colors.white),
           ),
         ),
       );
-    } else if (evento.status == StatusAula.finalizado) {
+    } else if (evento.status == 'FINALIZADO') {
       tags.add(
         Container(
           padding: const EdgeInsets.all(4),
@@ -127,7 +127,7 @@ class EventoCard extends StatelessWidget {
             color: Colors.red,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(
+          child: const Text(
             'Finalizado',
             style: TextStyle(color: Colors.white),
           ),
@@ -141,7 +141,7 @@ class EventoCard extends StatelessWidget {
             color: Colors.orange,
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(
+          child: const Text(
             'Pendente',
             style: TextStyle(color: Colors.white),
           ),

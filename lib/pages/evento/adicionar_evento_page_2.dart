@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_srpg_app/models/aula.dart';
+import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -320,8 +320,8 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
     print('Aula será criada com os seguintes parâmetros:');
     print('Nome: ${widget.aulaASerCriada.nome}');
     print('Descrição: ${widget.aulaASerCriada.descricao}');
-    print('Data de início: ${widget.aulaASerCriada.dataInicio}');
-    print('Data de fim: ${widget.aulaASerCriada.dataFim}');
+    print('Data de início: ${widget.aulaASerCriada.dtInicio}');
+    print('Data de fim: ${widget.aulaASerCriada.dtFim}');
     print('Local: ${widget.aulaASerCriada.local}');
     print('Latitude: ${widget.aulaASerCriada.latitude}');
     print('Longitude: ${widget.aulaASerCriada.longitude}');

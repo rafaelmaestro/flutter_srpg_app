@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
-import 'package:flutter_srpg_app/models/aula.dart';
+import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/camera/camera_page.dart';
 import 'package:flutter_srpg_app/pages/evento/evento_aluno_page.dart';
 import 'package:flutter_srpg_app/services/data_service.dart';
@@ -69,9 +69,9 @@ class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
               child: Text('Local: ${widget.aula.local}'),
             ),
             Text(DataService().calcularDuracaoEventoEmHoras(
-                widget.aula.dataInicio, DateTime.now())),
+                widget.aula.dtInicio ?? DateTime.now(), DateTime.now())),
             Text(DataService().calcularTerminoEventoEmHoras(
-                widget.aula.dataFim, DateTime.now())),
+                widget.aula.dtFim ?? DateTime.now(), DateTime.now())),
             Text('Você está a ${LocalizacaoService().calcularDistancia(
               {'latitude': local.lat, 'longitude': local.long, 'elevacao': 0},
               {

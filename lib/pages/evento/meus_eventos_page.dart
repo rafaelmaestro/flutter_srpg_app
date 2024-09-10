@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_srpg_app/models/aula.dart';
+import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/evento_card.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
@@ -39,8 +39,14 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
       if (element['organizador'] == true) {
         Evento eventoRetornado = Evento(
           cpfOrganizador: element['cpfOrganizador'],
-          dataFim: element['dataFim'],
-          dataInicio: element['dataInicio'],
+          checkIns: CheckIns.fromJson(element['checkIns']),
+          checkOuts: CheckOuts.fromJson(element['checkOuts']),
+          dataHora: DateTime.now(),
+          dtCriacao: DateTime.now(),
+          dtUltAtualizacao: DateTime.now(),
+          id: element['id'],
+          dtFim: element['dtFim'],
+          dtInicio: element['dtInicio'],
           descricao: element['descricao'],
           latitude: element['latitude'],
           longitude: element['longitude'],
@@ -53,8 +59,14 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
       } else {
         Evento eventoRetornado = Evento(
           cpfOrganizador: element['cpfOrganizador'],
-          dataFim: element['dataFim'],
-          dataInicio: element['dataInicio'],
+          checkIns: CheckIns.fromJson(element['checkIns']),
+          checkOuts: CheckOuts.fromJson(element['checkOuts']),
+          dataHora: DateTime.now(),
+          dtCriacao: DateTime.now(),
+          dtUltAtualizacao: DateTime.now(),
+          id: element['id'],
+          dtFim: element['dtFim'],
+          dtInicio: element['dtInicio'],
           descricao: element['descricao'],
           latitude: element['latitude'],
           longitude: element['longitude'],
@@ -101,7 +113,7 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
         children: [
           const SizedBox(height: 20),
           Container(
-            margin: EdgeInsets.only(left: 25, right: 25),
+            margin: const EdgeInsets.only(left: 25, right: 25),
             padding:
                 const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 10),
             decoration: BoxDecoration(
@@ -255,7 +267,7 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
       return [
         Center(
           child: CheckboxListTile(
-            title: Text(
+            title: const Text(
               "Organizados",
               style: TextStyle(fontSize: 16),
             ),
@@ -266,11 +278,11 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
               });
             },
             controlAffinity: ListTileControlAffinity.leading,
-            activeColor: Color(0xFF0A6D92),
+            activeColor: const Color(0xFF0A6D92),
           ),
         ),
         CheckboxListTile(
-          title: Text(
+          title: const Text(
             "Convidados",
             style: TextStyle(fontSize: 16),
           ),
@@ -281,11 +293,11 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
             });
           },
           controlAffinity: ListTileControlAffinity.leading,
-          activeColor: Color(0xFF0A6D92),
+          activeColor: const Color(0xFF0A6D92),
         )
       ];
     } else {
-      return [SizedBox.shrink()];
+      return [const SizedBox.shrink()];
     }
   }
 }
