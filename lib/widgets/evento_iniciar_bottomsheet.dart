@@ -1,15 +1,16 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
+import 'package:flutter_srpg_app/helpers/format_duration.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/services/localizacao_service.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
 class EventoIniciarBottomSheet extends StatefulWidget {
-  Evento aula;
+  Evento evento;
 
-  EventoIniciarBottomSheet({super.key, required this.aula});
+  EventoIniciarBottomSheet({super.key, required this.evento});
 
   @override
   _EventoIniciarBottomSheetState createState() =>
@@ -34,31 +35,32 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
             Padding(
               padding: const EdgeInsets.only(top: 24),
               child: Text(
-                widget.aula.nome,
+                widget.evento.nome,
                 style:
                     const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 24),
-              child: Text(widget.aula.descricao),
+              child: Text(widget.evento.descricao),
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 24),
-              child: Text('Local: ${widget.aula.local}'),
+              child: Text('Local: ${widget.evento.local}'),
             ),
             RichText(
               textAlign: TextAlign.center, // Centraliza todo o texto
               text: TextSpan(
                 style: DefaultTextStyle.of(context)
                     .style, // Usa o estilo de texto padrão do contexto
-                children: const <TextSpan>[
-                  TextSpan(
+                children: <TextSpan>[
+                  const TextSpan(
                       text:
                           'Este evento está marcado para iniciar em: \n'), // Texto seguido de quebra de linha
                   TextSpan(
-                    text: 'dd/mm/yyyy hh:mm', // Texto da data
-                    style: TextStyle(
+                    text:
+                        '${widget.evento.dtInicioPrevista.day.toString().padLeft(2, '0')}/${widget.evento.dtInicioPrevista.month}/${widget.evento.dtInicioPrevista.year} às ${widget.evento.dtInicioPrevista.hour}:${widget.evento.dtInicioPrevista.minute}h.', // Texto da data
+                    style: const TextStyle(
                         fontWeight:
                             FontWeight.bold), // Estilo específico para a data
                   ),
@@ -66,16 +68,10 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
               ),
             ),
             const SizedBox(height: 16), // Espaçamento entre os textos
-            const Text('A duração prevista é de: x horas.'),
-            const Text('Este evento tem X convidados.'),
-            Text('Você está a ${LocalizacaoService().calcularDistancia(
-              {'latitude': local.lat, 'longitude': local.long, 'elevacao': 0},
-              {
-                'latitude': widget.aula.latitude!,
-                'longitude': widget.aula.longitude!,
-                'elevacao': 0
-              },
-            )}km de distância desse evento.'), // Novo texto adicionado
+            Text(
+                'A duração prevista é de: ${formatDuration(widget.evento.dtFimPrevista.difference(widget.evento.dtInicioPrevista))}.'),
+            Text(
+                'Este evento tem ${widget.evento.convidados.total} convidados.'),
             Padding(
               padding: const EdgeInsets.only(top: 24, bottom: 24),
               // child: CircularProgressIndicator()

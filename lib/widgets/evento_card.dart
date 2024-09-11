@@ -24,13 +24,6 @@ class EventoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String firstLetterAfterAulaDe = '';
-    final RegExp regExp = RegExp(r'Aula de (\w)');
-    final Match? match = regExp.firstMatch(evento.nome);
-    if (match != null && match.groupCount >= 1) {
-      firstLetterAfterAulaDe = match.group(1)!;
-    }
-
     return Container(
       margin: const EdgeInsets.only(left: 12, right: 12, top: 12),
       padding: const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 20),
@@ -56,7 +49,7 @@ class EventoCard extends StatelessWidget {
             leading: CircleAvatar(
               backgroundColor: const Color(0xFF0A6D92),
               foregroundColor: Colors.white,
-              child: Text(firstLetterAfterAulaDe.toUpperCase()),
+              child: Text(evento.nome[0]),
             ),
             onTap: () => {
               if (evento.status == 'EM ANDAMENTO' && !isOrganizador)
@@ -71,7 +64,46 @@ class EventoCard extends StatelessWidget {
                   showModalBottomSheet(
                       context: appKey.currentState!.context,
                       builder: (context) =>
-                          EventoIniciarBottomSheet(aula: evento))
+                          EventoIniciarBottomSheet(evento: evento))
+                }
+              else
+                {
+                  showDialog(
+                    context: appKey.currentState!.context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: const Text(
+                          'Calma aí, viajante do tempo! ⌛',
+                          textAlign: TextAlign.center, // Centraliza o título
+                          style: TextStyle(
+                              fontWeight:
+                                  FontWeight.bold), // Torna o título em negrito
+                        ),
+                        content: Text(
+                          'O evento ainda não começou, que tal aproveitar o tempo para pegar um café e relaxar? ☕ \n\n O evento deve começar em: \n ${evento.dtInicioPrevista.day.toString().padLeft(2, '0')}/${evento.dtInicioPrevista.month}/${evento.dtInicioPrevista.year} às ${evento.dtInicioPrevista.hour}:${evento.dtInicioPrevista.minute}h.',
+                          textAlign: TextAlign.center, // Centraliza o conteúdo
+                        ),
+                        actions: <Widget>[
+                          Center(
+                            child: TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors
+                                    .green, // Cor do texto do botão Cancelar
+                                side: const BorderSide(
+                                    color: Colors.green,
+                                    width: 2), // Borda do botão Cancela
+                                minimumSize: const Size(double.infinity, 50),
+                              ),
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Ok, entendi!'),
+                            ),
+                          )
+                        ],
+                      );
+                    },
+                  )
                 }
             },
             // Adicione mais detalhes do evento aqui

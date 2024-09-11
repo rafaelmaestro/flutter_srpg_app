@@ -3,6 +3,7 @@ import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/evento_card.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MeusEventosPage extends StatefulWidget {
   MeusEventosPage({super.key});
@@ -14,6 +15,7 @@ class MeusEventosPage extends StatefulWidget {
 }
 
 class _MeusEventosPageState extends State<MeusEventosPage> {
+  late Future<void> _futureMeusEventos;
   String searchQuery = '';
   bool isOrganizadosChecked = true;
   bool isConvidadosChecked = true;
@@ -22,7 +24,7 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
   @override
   void initState() {
     super.initState();
-    _loadMeusEventos();
+    _futureMeusEventos = _loadMeusEventos();
   }
 
   @override
@@ -30,52 +32,22 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
     super.dispose();
   }
 
-  void _loadMeusEventos() {
-    // TODO: Implementar a busca dos eventos do usuário (organizados e convidados) que ainda não foram realizados ou estão em andamento
-    final eventos =
-        EventoRepository().getEventosConvidadosEOrganizados(1, 5, null);
+  Future<void> _loadMeusEventos() async {
+    final eventos = await EventoRepository().getEventosConvidadosEOrganizados();
 
-    eventos.forEach((element) {
-      if (element['organizador'] == true) {
-        Evento eventoRetornado = Evento(
-          cpfOrganizador: element['cpfOrganizador'],
-          checkIns: CheckIns.fromJson(element['checkIns']),
-          checkOuts: CheckOuts.fromJson(element['checkOuts']),
-          dataHora: DateTime.now(),
-          dtCriacao: DateTime.now(),
-          dtUltAtualizacao: DateTime.now(),
-          id: element['id'],
-          dtFim: element['dtFim'],
-          dtInicio: element['dtInicio'],
-          descricao: element['descricao'],
-          latitude: element['latitude'],
-          longitude: element['longitude'],
-          local: element['local'],
-          nome: element['nome'],
-          status: element['status'],
-          convidados: element['convidados'],
-        );
-        widget.eventosOrganizados.add(eventoRetornado);
-      } else {
-        Evento eventoRetornado = Evento(
-          cpfOrganizador: element['cpfOrganizador'],
-          checkIns: CheckIns.fromJson(element['checkIns']),
-          checkOuts: CheckOuts.fromJson(element['checkOuts']),
-          dataHora: DateTime.now(),
-          dtCriacao: DateTime.now(),
-          dtUltAtualizacao: DateTime.now(),
-          id: element['id'],
-          dtFim: element['dtFim'],
-          dtInicio: element['dtInicio'],
-          descricao: element['descricao'],
-          latitude: element['latitude'],
-          longitude: element['longitude'],
-          local: element['local'],
-          nome: element['nome'],
-          status: element['status'],
-          convidados: element['convidados'],
-        );
-        widget.eventosConvidado.add(eventoRetornado);
+    final prefs = await SharedPreferences.getInstance();
+    final cpf = prefs.get('cpf').toString();
+
+    setState(() {
+      widget.eventosOrganizados.clear();
+      widget.eventosConvidado.clear();
+
+      for (var element in eventos) {
+        if (element.cpfOrganizador == cpf) {
+          widget.eventosOrganizados.add(element);
+        } else {
+          widget.eventosConvidado.add(element);
+        }
       }
     });
   }
@@ -109,81 +81,97 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
           bottom: Radius.circular(32),
         )),
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 20),
-          Container(
-            margin: const EdgeInsets.only(left: 25, right: 25),
-            padding:
-                const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 10),
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(16)),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 32,
-                    color: Colors.grey.withOpacity(.1),
-                  )
-                ]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+      body: FutureBuilder<void>(
+        future: _futureMeusEventos,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return RefreshIndicator(
+                onRefresh: _loadMeusEventos,
+                color: const Color(0xFF0A6D92),
+                child: Column(
                   children: [
+                    const SizedBox(height: 20),
+                    Container(
+                      margin: const EdgeInsets.only(left: 25, right: 25),
+                      padding: const EdgeInsets.only(
+                          top: 20, left: 20, right: 20, bottom: 10),
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(16),
+                              bottomLeft: Radius.circular(16),
+                              bottomRight: Radius.circular(16)),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 32,
+                              color: Colors.grey.withOpacity(.1),
+                            )
+                          ]),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  onChanged: (value) {
+                                    setState(() {
+                                      searchQuery = value;
+                                    });
+                                  },
+                                  decoration: const InputDecoration(
+                                      labelStyle:
+                                          TextStyle(color: Color(0xFF0A6D92)),
+                                      labelText: "Pesquisar",
+                                      hintText:
+                                          "Digite aqui o nome do evento...",
+                                      prefixIcon: Icon(
+                                        Icons.search,
+                                        color: Color(0xFF0A6D92),
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.all(0)),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.filter_alt,
+                                  color: Color(0xFF0A6D92),
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isFiltered = true;
+                                  });
+                                },
+                              ),
+                              _showCloseFilterIcon(),
+                            ],
+                          ),
+                          ..._handleIsFiltered(),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     Expanded(
-                      child: TextField(
-                        onChanged: (value) {
-                          setState(() {
-                            searchQuery = value;
-                          });
-                        },
-                        decoration: const InputDecoration(
-                            labelStyle: TextStyle(color: Color(0xFF0A6D92)),
-                            labelText: "Pesquisar",
-                            hintText: "Digite aqui o nome do evento...",
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: Color(0xFF0A6D92),
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.all(0)),
+                      child: SafeArea(
+                        top: false,
+                        child: SingleChildScrollView(
+                            physics: const BouncingScrollPhysics(),
+                            child: Column(
+                              children: [
+                                ..._handleElementosExibidos(),
+                              ],
+                            )),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.filter_alt,
-                        color: Color(0xFF0A6D92),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          isFiltered = true;
-                        });
-                      },
-                    ),
-                    _showCloseFilterIcon(),
                   ],
-                ),
-                ..._handleIsFiltered(),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: SafeArea(
-              top: false,
-              child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    children: [
-                      ..._handleElementosExibidos(),
-                    ],
-                  )),
-            ),
-          ),
-        ],
+                ));
+          }
+        },
       ),
       bottomNavigationBar: const SRPGNavigationBar(),
     );
@@ -240,6 +228,8 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
         }).toList(),
       );
     }
+
+    print(elementosExibidos);
 
     return elementosExibidos;
   }

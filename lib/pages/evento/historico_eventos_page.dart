@@ -3,6 +3,7 @@ import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/evento_card.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HistoricoEventosPage extends StatefulWidget {
   HistoricoEventosPage({super.key});
@@ -31,54 +32,20 @@ class _HistoricoEventosPageState extends State<HistoricoEventosPage> {
     super.dispose();
   }
 
-  void _loadMeusEventos() {
+  void _loadMeusEventos() async {
     // TODO: Implementar a busca dos eventos do usuário (organizados e convidados) que ainda não foram realizados ou estão em andamento
-    final eventos =
-        EventoRepository().getEventosConvidadosEOrganizados(1, 5, null);
+    final prefs = await SharedPreferences.getInstance();
+    final cpf = prefs.get('cpf').toString();
 
-    eventos.forEach((element) {
-      if (element['organizador'] == true) {
-        Evento eventoRetornado = Evento(
-          cpfOrganizador: element['cpfOrganizador'],
-          checkIns: CheckIns.fromJson(element['checkIns']),
-          checkOuts: CheckOuts.fromJson(element['checkOuts']),
-          dataHora: DateTime.now(),
-          dtCriacao: DateTime.now(),
-          dtUltAtualizacao: DateTime.now(),
-          id: element['id'],
-          dtFim: element['dtFim'],
-          dtInicio: element['dtInicio'],
-          descricao: element['descricao'],
-          latitude: element['latitude'],
-          longitude: element['longitude'],
-          local: element['local'],
-          nome: element['nome'],
-          status: element['status'],
-          convidados: element['convidados'],
-        );
-        widget.eventosOrganizados.add(eventoRetornado);
+    final eventos = await EventoRepository().getEventosConvidadosEOrganizados();
+
+    for (var element in eventos) {
+      if (element.cpfOrganizador == cpf) {
+        widget.eventosOrganizados.add(element);
       } else {
-        Evento eventoRetornado = Evento(
-          cpfOrganizador: element['cpfOrganizador'],
-          checkIns: CheckIns.fromJson(element['checkIns']),
-          checkOuts: CheckOuts.fromJson(element['checkOuts']),
-          dataHora: DateTime.now(),
-          dtCriacao: DateTime.now(),
-          dtUltAtualizacao: DateTime.now(),
-          id: element['id'],
-          dtFim: element['dtFim'],
-          dtInicio: element['dtInicio'],
-          descricao: element['descricao'],
-          latitude: element['latitude'],
-          longitude: element['longitude'],
-          local: element['local'],
-          nome: element['nome'],
-          status: element['status'],
-          convidados: element['convidados'],
-        );
-        widget.eventosConvidado.add(eventoRetornado);
+        widget.eventosConvidado.add(element);
       }
-    });
+    }
   }
 
   // nome do evento

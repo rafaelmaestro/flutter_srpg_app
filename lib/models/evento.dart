@@ -3,7 +3,8 @@ class Evento {
   final String nome;
   final String status;
   final String descricao;
-  final DateTime dataHora;
+  final DateTime dtInicioPrevista;
+  final DateTime dtFimPrevista;
   final DateTime? dtInicio;
   final DateTime? dtFim;
   final double? latitude;
@@ -21,7 +22,8 @@ class Evento {
     required this.nome,
     required this.status,
     required this.descricao,
-    required this.dataHora,
+    required this.dtInicioPrevista,
+    required this.dtFimPrevista,
     this.dtInicio,
     this.dtFim,
     this.latitude,
@@ -46,7 +48,8 @@ class Evento {
       nome: json['nome'],
       status: json['status'],
       descricao: json['descricao'],
-      dataHora: DateTime.parse(json['data_hora']),
+      dtInicioPrevista: DateTime.parse(json['dt_inicio_prevista']),
+      dtFimPrevista: DateTime.parse(json['dt_fim_prevista']),
       local: json['local'],
       latitude:
           json['latitude'] != null ? double.tryParse(json['latitude']) : null,
