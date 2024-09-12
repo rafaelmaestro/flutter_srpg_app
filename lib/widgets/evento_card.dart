@@ -5,14 +5,6 @@ import 'package:flutter_srpg_app/widgets/evento_checkin_bottomsheet.dart';
 import 'package:flutter_srpg_app/widgets/evento_iniciar_bottomsheet.dart';
 import 'package:intl/intl.dart';
 
-// Card(
-//             child: ListTile(
-//               title: Text(evento.nome),
-//               subtitle: Text('Organizador'),
-//               // Adicione mais detalhes do evento aqui
-//             ),
-//           );
-
 class EventoCard extends StatelessWidget {
   final Evento evento;
   final bool isOrganizador;
@@ -45,14 +37,14 @@ class EventoCard extends StatelessWidget {
           ListTile(
             title: Text(evento.nome),
             subtitle: Text(
-                'Data: ${DateFormat('dd/MM/yyyy HH\'h\'mm').format(evento.dtInicio ?? DateTime.now())}'),
+                'Data: ${DateFormat('dd/MM/yyyy HH\'h\'mm').format(evento.dtInicioPrevista ?? DateTime.now())}'),
             leading: CircleAvatar(
               backgroundColor: const Color(0xFF0A6D92),
               foregroundColor: Colors.white,
               child: Text(evento.nome[0]),
             ),
             onTap: () => {
-              if (evento.status == 'EM ANDAMENTO' && !isOrganizador)
+              if (evento.status == 'EM_ANDAMENTO' && !isOrganizador)
                 {
                   showModalBottomSheet(
                       context: appKey.currentState!.context,
@@ -137,7 +129,7 @@ class EventoCard extends StatelessWidget {
         ),
       );
     }
-    if (evento.status == 'EM ANDAMENTO') {
+    if (evento.status == 'EM_ANDAMENTO') {
       tags.add(
         Container(
           padding: const EdgeInsets.all(4),

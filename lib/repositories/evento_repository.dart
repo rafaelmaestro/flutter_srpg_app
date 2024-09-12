@@ -13,12 +13,41 @@ class EventosQueryParams {
   final String limite;
   final String? cpfConvidado;
   final String? cpfOrganizador;
+  final String? nome;
+  final String? status;
 
   EventosQueryParams(
       {required this.pagina,
       required this.limite,
       this.cpfConvidado,
-      this.cpfOrganizador});
+      this.cpfOrganizador,
+      this.nome,
+      this.status});
+
+  Map<String, String> toMap() {
+    final Map<String, String> params = {
+      'pagina': pagina,
+      'limite': limite,
+    };
+
+    if (cpfConvidado != null) {
+      params['cpf_convidado'] = cpfConvidado!;
+    }
+
+    if (cpfOrganizador != null) {
+      params['cpf_organizador'] = cpfOrganizador!;
+    }
+
+    if (nome != null) {
+      params['nome'] = nome!;
+    }
+
+    if (status != null) {
+      params['status'] = status!;
+    }
+
+    return params;
+  }
 }
 
 class EventosResponse {
@@ -49,16 +78,11 @@ class EventoRepository extends ChangeNotifier {
       {EventosQueryParams? eventosQueryParams}) async {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.get('access_token');
+    final queryParams = eventosQueryParams?.toMap();
+
     final uri =
         Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/evento').replace(
-      queryParameters: {
-        'pagina': eventosQueryParams?.pagina.toString(),
-        'limite': eventosQueryParams?.limite.toString(),
-        if (eventosQueryParams?.cpfConvidado != null)
-          'cpfConvidado': eventosQueryParams?.cpfConvidado,
-        if (eventosQueryParams?.cpfOrganizador != null)
-          'cpfOrganizador': eventosQueryParams?.cpfOrganizador,
-      },
+      queryParameters: queryParams,
     );
 
     final response = await http.get(
@@ -82,45 +106,58 @@ class EventoRepository extends ChangeNotifier {
   }
 
   Future<List<Evento>> getEventosConvidado() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cpf = prefs.get('cpf').toString();
-    final response = await fetchEventos(
-      eventosQueryParams: EventosQueryParams(
-        pagina: '1',
-        limite: '10',
-        cpfConvidado: cpf,
-      ),
-    );
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cpf = prefs.get('cpf').toString();
+      final response = await fetchEventos(
+        eventosQueryParams: EventosQueryParams(
+          pagina: '1',
+          limite: '10',
+          cpfConvidado: cpf,
+        ),
+      );
 
-    if (response.code != 200) {
-      Get.snackbar('Erro', response.error!);
-      return [];
+      if (response.code != 200) {
+        throw Exception(response.error);
+      }
+
+      return response.eventos ?? [];
+    } catch (err) {
+      rethrow;
     }
-
-    return response.eventos ?? [];
   }
 
-  Future<List<Evento>> getEventosConvidadosEOrganizados() async {
-    // TODO: aqui não está buscando certo, está retornando todos os eventos
+  Future<List<Evento>>
+      getEventosConvidadosEOrganizadosPendentesOuEmAndamento() async {
     final prefs = await SharedPreferences.getInstance();
     final cpf = prefs.get('cpf').toString();
 
-    final response = await fetchEventos(
-      eventosQueryParams: EventosQueryParams(
-        pagina: '1',
-        limite: '10',
-        cpfConvidado: cpf,
-        cpfOrganizador: cpf,
-      ),
-    );
+    try {
+      final response = await fetchEventos(
+        eventosQueryParams: EventosQueryParams(
+          pagina: '1',
+          limite: '10',
+          cpfConvidado: cpf,
+          cpfOrganizador: cpf,
+          status: 'PENDENTE, EM_ANDAMENTO',
+        ),
+      );
 
-    if (response.code != 200) {
-      Get.snackbar('Erro', response.error!);
-      return [];
+      if (response.code != 200) {
+        throw Exception(response.error);
+      }
+
+      return response.eventos ?? [];
+    } catch (err) {
+      rethrow;
     }
-
-    return response.eventos ?? [];
   }
 
-  Future<List<Evento>> getAulas() async => await getEventosConvidado();
+  Future<List<Evento>> getAulas() async {
+    try {
+      return await getEventosConvidado();
+    } catch (err) {
+      rethrow;
+    }
+  }
 }

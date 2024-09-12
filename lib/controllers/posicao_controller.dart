@@ -3,6 +3,7 @@ import 'package:flutter_srpg_app/pages/login/home_page.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/evento_checkin_bottomsheet.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class PosicaoController extends ChangeNotifier {
@@ -25,29 +26,45 @@ class PosicaoController extends ChangeNotifier {
   }
 
   loadAulas() async {
-    final aulas = await EventoRepository().getAulas();
+    try {
+      final aulas = await EventoRepository().getAulas();
 
-    print(aulas.length);
+      aulas.forEach((aula) async {
+        print(aula.latitude);
+        print(aula.longitude);
+        if (aula.latitude != null && aula.longitude != null) {
+          markers.add(Marker(
+            markerId: MarkerId(aula.nome),
+            position: LatLng(aula.latitude!, aula.longitude!),
+            icon: await BitmapDescriptor.fromAssetImage(
+                const ImageConfiguration(), 'lib/assets/app/aulas_icon.png'),
+            onTap: () => {
+              showModalBottomSheet(
+                  context: appKey.currentState!.context,
+                  builder: (context) => EventoCheckInBottomSheet(aula: aula))
+            },
+          ));
+        }
+      });
 
-    aulas.forEach((aula) async {
-      print(aula.latitude);
-      print(aula.longitude);
-      if (aula.latitude != null && aula.longitude != null) {
-        markers.add(Marker(
-          markerId: MarkerId(aula.nome),
-          position: LatLng(aula.latitude!, aula.longitude!),
-          icon: await BitmapDescriptor.fromAssetImage(
-              const ImageConfiguration(), 'lib/assets/app/aulas_icon.png'),
-          onTap: () => {
-            showModalBottomSheet(
-                context: appKey.currentState!.context,
-                builder: (context) => EventoCheckInBottomSheet(aula: aula))
-          },
-        ));
-      }
-    });
-
-    notifyListeners();
+      notifyListeners();
+    } catch (err) {
+      Get.snackbar(
+        'Falha ao buscar seus eventos! 😢',
+        'Por favor, tente novamente mais tarde.\nCaso o erro persista, entre em contato com o suporte em 📞 4002-8922 e informe o seguinte código: \n\n${err.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+      return;
+    }
   }
 
   addEventoMarker(LatLng posicao) async {

@@ -37,7 +37,8 @@ class _HistoricoEventosPageState extends State<HistoricoEventosPage> {
     final prefs = await SharedPreferences.getInstance();
     final cpf = prefs.get('cpf').toString();
 
-    final eventos = await EventoRepository().getEventosConvidadosEOrganizados();
+    final eventos = await EventoRepository()
+        .getEventosConvidadosEOrganizadosPendentesOuEmAndamento();
 
     for (var element in eventos) {
       if (element.cpfOrganizador == cpf) {

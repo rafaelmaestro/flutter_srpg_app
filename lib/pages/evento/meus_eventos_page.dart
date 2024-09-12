@@ -3,6 +3,7 @@ import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/evento_card.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class MeusEventosPage extends StatefulWidget {
@@ -33,29 +34,43 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
   }
 
   Future<void> _loadMeusEventos() async {
-    final eventos = await EventoRepository().getEventosConvidadosEOrganizados();
+    try {
+      final eventos = await EventoRepository()
+          .getEventosConvidadosEOrganizadosPendentesOuEmAndamento();
 
-    final prefs = await SharedPreferences.getInstance();
-    final cpf = prefs.get('cpf').toString();
+      final prefs = await SharedPreferences.getInstance();
+      final cpf = prefs.get('cpf').toString();
 
-    setState(() {
-      widget.eventosOrganizados.clear();
-      widget.eventosConvidado.clear();
+      setState(() {
+        widget.eventosOrganizados.clear();
+        widget.eventosConvidado.clear();
 
-      for (var element in eventos) {
-        if (element.cpfOrganizador == cpf) {
-          widget.eventosOrganizados.add(element);
-        } else {
-          widget.eventosConvidado.add(element);
+        for (var element in eventos) {
+          if (element.cpfOrganizador == cpf) {
+            widget.eventosOrganizados.add(element);
+          } else {
+            widget.eventosConvidado.add(element);
+          }
         }
-      }
-    });
+      });
+    } catch (err) {
+      Get.snackbar(
+        'Falha ao buscar seus eventos! 😢',
+        'Por favor, tente novamente mais tarde.\nCaso o erro persista, entre em contato com o suporte em 📞 4002-8922 e informe o seguinte código: \n\n${err.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+      return;
+    }
   }
-
-  // nome do evento
-  // descrição do evento
-  // data e hora do evento
-  // endereco do evento (cep, cidade, estado, rua, numero, complemento?)
 
   @override
   Widget build(BuildContext context) {
@@ -159,13 +174,21 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
                     Expanded(
                       child: SafeArea(
                         top: false,
-                        child: SingleChildScrollView(
-                            physics: const BouncingScrollPhysics(),
-                            child: Column(
-                              children: [
-                                ..._handleElementosExibidos(),
-                              ],
-                            )),
+                        child: Scrollbar(
+                          thickness:
+                              8.0, // Define a espessura da barra de rolagem
+                          radius: const Radius.circular(
+                              10.0), // Define o raio da borda da barra de rolagem
+                          scrollbarOrientation: ScrollbarOrientation
+                              .right, // Define a orientação da barra de rolagem
+                          child: SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              child: Column(
+                                children: [
+                                  ..._handleElementosExibidos(),
+                                ],
+                              )),
+                        ),
                       ),
                     ),
                   ],
@@ -181,55 +204,76 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
     List<Widget> elementosExibidos = [];
 
     if (widget.eventosOrganizados.isEmpty && widget.eventosConvidado.isEmpty) {
-      return elementosExibidos.add(
+      elementosExibidos.add(const SizedBox(height: 20));
+      elementosExibidos.add(
         const Center(
-          child: Text(
-            'Nenhum evento encontrado',
-            style: TextStyle(fontSize: 16),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              'Tudo tranquilo por aqui! 😎 \n\n Você ainda não foi convidado para nenhum evento. Que tal ser o protagonista e criar o seu próprio?',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
           ),
         ),
       );
+      elementosExibidos.add(const SizedBox(height: 500));
+
+      return elementosExibidos;
     }
+
+    // ORDERNAR POR DATA MAIS RECENTE OS EVENTOS
+    List<Evento> eventosOrganizados = List.from(widget.eventosOrganizados);
+    List<Evento> eventosConvidado = List.from(widget.eventosConvidado);
+
+    eventosOrganizados
+        .sort((a, b) => b.dtInicioPrevista.compareTo(a.dtInicioPrevista));
+    eventosConvidado
+        .sort((a, b) => b.dtInicioPrevista.compareTo(a.dtInicioPrevista));
 
     if (isFiltered) {
       if (isOrganizadosChecked && isConvidadosChecked) {
         elementosExibidos.addAll(
-          widget.eventosOrganizados.map((evento) {
+          eventosOrganizados.map((evento) {
             return EventoCard(evento: evento, isOrganizador: true);
           }).toList(),
         );
         elementosExibidos.addAll(
-          widget.eventosConvidado.map((evento) {
+          eventosConvidado.map((evento) {
             return EventoCard(evento: evento, isOrganizador: false);
           }).toList(),
         );
       } else if (isOrganizadosChecked) {
         elementosExibidos.addAll(
-          widget.eventosOrganizados.map((evento) {
+          eventosOrganizados.map((evento) {
             return EventoCard(evento: evento, isOrganizador: true);
           }).toList(),
         );
       } else if (isConvidadosChecked) {
         elementosExibidos.addAll(
-          widget.eventosConvidado.map((evento) {
+          eventosConvidado.map((evento) {
             return EventoCard(evento: evento, isOrganizador: false);
           }).toList(),
         );
       }
     } else {
+      // TODO: ordenar por dtInicioPrevista dando preferencia para eventos organizados
       elementosExibidos.addAll(
-        widget.eventosOrganizados.map((evento) {
+        eventosOrganizados.map((evento) {
           return EventoCard(evento: evento, isOrganizador: true);
         }).toList(),
       );
       elementosExibidos.addAll(
-        widget.eventosConvidado.map((evento) {
+        eventosConvidado.map((evento) {
           return EventoCard(evento: evento, isOrganizador: false);
         }).toList(),
       );
     }
 
-    print(elementosExibidos);
+    elementosExibidos.add(const SizedBox(height: 500));
 
     return elementosExibidos;
   }
