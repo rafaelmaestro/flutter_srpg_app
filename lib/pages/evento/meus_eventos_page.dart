@@ -6,6 +6,8 @@ import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// TODO: implementar paginação vinda do backend
+// TODO: implementar search bar realizando busca no backend
 class MeusEventosPage extends StatefulWidget {
   MeusEventosPage({super.key});
   List<Evento> eventosOrganizados = [];
@@ -21,11 +23,13 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
   bool isOrganizadosChecked = true;
   bool isConvidadosChecked = true;
   bool isFiltered = false;
+  List<Widget> elementosExibidos = [];
 
   @override
   void initState() {
     super.initState();
     _futureMeusEventos = _loadMeusEventos();
+    elementosExibidos = _handleElementosExibidos(searchQuery);
   }
 
   @override
@@ -52,6 +56,9 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
             widget.eventosConvidado.add(element);
           }
         }
+
+        elementosExibidos.clear();
+        elementosExibidos = _handleElementosExibidos(searchQuery);
       });
     } catch (err) {
       Get.snackbar(
@@ -136,6 +143,9 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
                                   onChanged: (value) {
                                     setState(() {
                                       searchQuery = value;
+                                      elementosExibidos.clear();
+                                      elementosExibidos =
+                                          _handleElementosExibidos(searchQuery);
                                     });
                                   },
                                   decoration: const InputDecoration(
@@ -185,7 +195,7 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
                               physics: const BouncingScrollPhysics(),
                               child: Column(
                                 children: [
-                                  ..._handleElementosExibidos(),
+                                  ...elementosExibidos,
                                 ],
                               )),
                         ),
@@ -200,9 +210,7 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
     );
   }
 
-  _handleElementosExibidos() {
-    List<Widget> elementosExibidos = [];
-
+  _handleElementosExibidos(String? searchQuery) {
     if (widget.eventosOrganizados.isEmpty && widget.eventosConvidado.isEmpty) {
       elementosExibidos.add(const SizedBox(height: 20));
       elementosExibidos.add(
@@ -225,27 +233,52 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
       return elementosExibidos;
     }
 
-    // ORDERNAR POR DATA MAIS RECENTE OS EVENTOS
     List<Evento> eventosOrganizados = List.from(widget.eventosOrganizados);
     List<Evento> eventosConvidado = List.from(widget.eventosConvidado);
+    List<Evento> todosEventos = [];
 
-    eventosOrganizados
-        .sort((a, b) => b.dtInicioPrevista.compareTo(a.dtInicioPrevista));
-    eventosConvidado
-        .sort((a, b) => b.dtInicioPrevista.compareTo(a.dtInicioPrevista));
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      eventosOrganizados = eventosOrganizados
+          .where((evento) =>
+              evento.nome.toLowerCase().contains(searchQuery.toLowerCase()))
+          .toList();
+      eventosConvidado = eventosConvidado
+          .where((evento) =>
+              evento.nome.toLowerCase().contains(searchQuery.toLowerCase()))
+          .toList();
+    }
+
+    DateTime now = DateTime.now();
+
+    int compareEventos(Evento a, Evento b) {
+      if (a.status == 'EM_ANDAMENTO' && b.status != 'EM_ANDAMENTO') {
+        return -1;
+      } else if (a.status != 'EM_ANDAMENTO' && b.status == 'EM_ANDAMENTO') {
+        return 1;
+      } else {
+        Duration diffA = a.dtInicioPrevista.difference(now);
+        Duration diffB = b.dtInicioPrevista.difference(now);
+        int dateComparison = diffA.compareTo(diffB);
+        if (dateComparison == 0) {
+          // Se as datas forem iguais, dar preferência aos eventos organizados pelo usuário
+          bool aIsOrganizador = eventosOrganizados.contains(a);
+          bool bIsOrganizador = eventosOrganizados.contains(b);
+          if (aIsOrganizador && !bIsOrganizador) {
+            return -1;
+          } else if (!aIsOrganizador && bIsOrganizador) {
+            return 1;
+          }
+        }
+        return dateComparison;
+      }
+    }
+
+    eventosOrganizados.sort(compareEventos);
+    eventosConvidado.sort(compareEventos);
 
     if (isFiltered) {
       if (isOrganizadosChecked && isConvidadosChecked) {
-        elementosExibidos.addAll(
-          eventosOrganizados.map((evento) {
-            return EventoCard(evento: evento, isOrganizador: true);
-          }).toList(),
-        );
-        elementosExibidos.addAll(
-          eventosConvidado.map((evento) {
-            return EventoCard(evento: evento, isOrganizador: false);
-          }).toList(),
-        );
+        todosEventos = [...eventosOrganizados, ...eventosConvidado];
       } else if (isOrganizadosChecked) {
         elementosExibidos.addAll(
           eventosOrganizados.map((evento) {
@@ -260,18 +293,16 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
         );
       }
     } else {
-      // TODO: ordenar por dtInicioPrevista dando preferencia para eventos organizados
-      elementosExibidos.addAll(
-        eventosOrganizados.map((evento) {
-          return EventoCard(evento: evento, isOrganizador: true);
-        }).toList(),
-      );
-      elementosExibidos.addAll(
-        eventosConvidado.map((evento) {
-          return EventoCard(evento: evento, isOrganizador: false);
-        }).toList(),
-      );
+      todosEventos = [...eventosOrganizados, ...eventosConvidado];
     }
+
+    todosEventos.sort(compareEventos);
+    elementosExibidos.addAll(
+      todosEventos.map((evento) {
+        return EventoCard(
+            evento: evento, isOrganizador: eventosOrganizados.contains(evento));
+      }).toList(),
+    );
 
     elementosExibidos.add(const SizedBox(height: 500));
 
@@ -309,6 +340,8 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
             onChanged: (newValue) {
               setState(() {
                 isOrganizadosChecked = newValue ?? false;
+                elementosExibidos.clear();
+                elementosExibidos = _handleElementosExibidos(searchQuery);
               });
             },
             controlAffinity: ListTileControlAffinity.leading,
@@ -324,6 +357,8 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
           onChanged: (newValue) {
             setState(() {
               isConvidadosChecked = newValue ?? false;
+              elementosExibidos.clear();
+              elementosExibidos = _handleElementosExibidos(searchQuery);
             });
           },
           controlAffinity: ListTileControlAffinity.leading,

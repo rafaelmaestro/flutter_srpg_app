@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/login/home_page.dart';
+import 'package:flutter_srpg_app/services/data_service.dart';
 import 'package:flutter_srpg_app/widgets/evento_checkin_bottomsheet.dart';
 import 'package:flutter_srpg_app/widgets/evento_iniciar_bottomsheet.dart';
 import 'package:intl/intl.dart';
@@ -143,6 +144,21 @@ class EventoCard extends StatelessWidget {
           ),
         ),
       );
+
+      tags.add(
+        Container(
+          margin: const EdgeInsets.only(left: 8),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 174, 20, 82),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Text(
+            '${evento.checkIns.total} check-ins',
+            style: const TextStyle(color: Colors.white),
+          ),
+        ),
+      );
     } else if (evento.status == 'FINALIZADO') {
       tags.add(
         Container(
@@ -171,6 +187,23 @@ class EventoCard extends StatelessWidget {
           ),
         ),
       );
+
+      if (evento.dtInicioPrevista.isBefore(DateTime.now())) {
+        tags.add(
+          Container(
+            margin: const EdgeInsets.only(left: 8),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.red,
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: const Text(
+              'Atrasado',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        );
+      }
     }
 
     return tags;

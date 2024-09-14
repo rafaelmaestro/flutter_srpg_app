@@ -59,7 +59,7 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
                           'Este evento está marcado para iniciar em: \n'), // Texto seguido de quebra de linha
                   TextSpan(
                     text:
-                        '${widget.evento.dtInicioPrevista.day.toString().padLeft(2, '0')}/${widget.evento.dtInicioPrevista.month}/${widget.evento.dtInicioPrevista.year} às ${widget.evento.dtInicioPrevista.hour}:${widget.evento.dtInicioPrevista.minute}h.', // Texto da data
+                        '${widget.evento.dtInicioPrevista.day.toString().padLeft(2, '0')}/${widget.evento.dtInicioPrevista.month.toString().padLeft(2, '0')}/${widget.evento.dtInicioPrevista.year} às ${widget.evento.dtInicioPrevista.hour}:${widget.evento.dtInicioPrevista.minute}h.', // Texto da data
                     style: const TextStyle(
                         fontWeight:
                             FontWeight.bold), // Estilo específico para a data
