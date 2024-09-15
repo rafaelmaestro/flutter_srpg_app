@@ -11,11 +11,11 @@ class PosicaoController extends ChangeNotifier {
   double long = 0.0;
   String erro = '';
   Set<Marker> markers = <Marker>{};
-  bool loadAulasBool;
+  bool loadEventosBool;
   late GoogleMapController _mapsController;
   Position? _currentPosition;
 
-  PosicaoController({this.loadAulasBool = false}) {
+  PosicaoController({this.loadEventosBool = false}) {
     _iniciarStreamPosicao();
   }
 
@@ -24,8 +24,14 @@ class PosicaoController extends ChangeNotifier {
   onMapCreated(GoogleMapController gmc) async {
     _mapsController = gmc;
     await getPosicao();
-    loadAulasBool == true ? loadAulas() : null;
-    loadAulasBool == false ? addEventoMarker(LatLng(lat, long)) : null;
+    loadEventosBool == true ? loadAulas() : null;
+    loadEventosBool == false ? addEventoMarker(LatLng(lat, long)) : null;
+  }
+
+  void _updatePosition(Position position) {
+    lat = position.latitude;
+    long = position.longitude;
+    notifyListeners();
   }
 
   loadAulas() async {
@@ -42,7 +48,7 @@ class PosicaoController extends ChangeNotifier {
             onTap: () => {
               showModalBottomSheet(
                   context: appKey.currentState!.context,
-                  builder: (context) => EventoCheckInBottomSheet(aula: aula))
+                  builder: (context) => EventoCheckInBottomSheet(evento: aula))
             },
           ));
         }
@@ -144,6 +150,11 @@ class PosicaoController extends ChangeNotifier {
           'A permissão para acessar a localização foi negada permanentemente, por favor, habilite a localização manualmente');
     }
 
+    // Obter a posição inicial
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    _updatePosition(position);
+
     // Configurar o fluxo de posição
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
@@ -153,15 +164,20 @@ class PosicaoController extends ChangeNotifier {
     ).listen((Position position) {
       _currentPosition = position;
 
-      final lat = _currentPosition!.latitude;
-      final long = _currentPosition!.longitude;
+      lat = _currentPosition!.latitude;
+      long = _currentPosition!.longitude;
 
       if (lat != 0.0 && long != 0.0) {
-        _mapsController.animateCamera(CameraUpdate.newLatLng(LatLng(lat,
-            long))); // Atualiza a câmera do mapa conforme atualiza a posição
-      }
+        _updatePosition(position);
 
-      notifyListeners();
+        try {
+          _mapsController.animateCamera(
+            CameraUpdate.newLatLng(LatLng(lat, long)),
+          ); // Atualiza a câmera do mapa conforme atualiza a posição
+        } catch (err) {
+          print('Erro ao atualizar a câmera do mapa: $err');
+        }
+      }
     });
   }
 }

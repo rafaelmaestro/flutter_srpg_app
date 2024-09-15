@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         child: ChangeNotifierProvider<PosicaoController>(
-          create: (context) => PosicaoController(loadAulasBool: true),
+          create: (context) => PosicaoController(loadEventosBool: true),
           child: Builder(builder: (context) {
             final local = context.watch<PosicaoController>();
 

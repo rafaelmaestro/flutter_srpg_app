@@ -50,6 +50,9 @@ class Evento {
       descricao: json['descricao'],
       dtInicioPrevista: DateTime.parse(json['dt_inicio_prevista']),
       dtFimPrevista: DateTime.parse(json['dt_fim_prevista']),
+      dtInicio:
+          json['dt_inicio'] != null ? DateTime.parse(json['dt_inicio']) : null,
+      dtFim: json['dt_fim'] != null ? DateTime.parse(json['dt_fim']) : null,
       local: json['local'],
       latitude:
           json['latitude'] != null ? double.tryParse(json['latitude']) : null,

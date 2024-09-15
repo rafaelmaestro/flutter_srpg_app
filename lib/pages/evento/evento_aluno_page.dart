@@ -1,10 +1,17 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
+import 'package:flutter_srpg_app/models/evento.dart';
+import 'package:flutter_srpg_app/pages/login/home_page.dart';
+import 'package:flutter_srpg_app/services/localizacao_service.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
 class EventoAlunoPage extends StatefulWidget {
-  const EventoAlunoPage({super.key});
+  final Evento evento;
+  const EventoAlunoPage({super.key, required this.evento});
 
   @override
   _EventoAlunoPageState createState() => _EventoAlunoPageState();
@@ -13,6 +20,11 @@ class EventoAlunoPage extends StatefulWidget {
 class _EventoAlunoPageState extends State<EventoAlunoPage> {
   Timer? _timer;
   int _start = 0;
+  late Future<void> _futurePosicao;
+  late PosicaoController local;
+  String? distancia;
+  List<String> eventos = [];
+  final DateFormat formatter = DateFormat('dd/MM/yyyy HH:mm:ss');
 
   void startTimer() {
     _timer = Timer.periodic(
@@ -29,6 +41,20 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
   void initState() {
     startTimer();
     super.initState();
+    local = PosicaoController(loadEventosBool: false);
+    _futurePosicao = local.getPosicao().then((_) {
+      setState(() {
+        distancia = LocalizacaoService().calcularDistancia(
+          {'latitude': local.lat, 'longitude': local.long, 'elevacao': 0},
+          {
+            'latitude': widget.evento.latitude!,
+            'longitude': widget.evento.longitude!,
+            'elevacao': 0
+          },
+        ).toString();
+      });
+    });
+    eventos.add('[${formatter.format(DateTime.now())}] - Check-in realizado');
   }
 
   @override
@@ -65,39 +91,115 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
           bottom: Radius.circular(32),
         )),
       ),
-      body: Stack(
-        children: [
-          Align(
-            alignment: Alignment.center,
-            child: Text(
-              '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
-              style: const TextStyle(fontSize: 50),
-            ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  _handleCheckout();
-                },
-                style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    minimumSize: const Size(double.infinity, 50)),
-                child: const Text('Realizar check-out',
-                    style: TextStyle(
-                      color: Colors.white,
-                    )),
-              ),
-            ),
-          ),
-        ],
+      body: ChangeNotifierProvider<PosicaoController>(
+        create: (context) => PosicaoController(),
+        child: Consumer<PosicaoController>(
+          builder: (context, local, child) {
+            final double eventLat =
+                widget.evento.latitude!; // Latitude do evento
+            final double eventLong =
+                widget.evento.longitude!; // Longitude do evento
+
+            double distanceInMeters = Geolocator.distanceBetween(
+              local.lat,
+              local.long,
+              eventLat,
+              eventLong,
+            );
+
+            final distanceText = distanceInMeters >= 1000
+                ? '${(distanceInMeters / 1000).toStringAsFixed(2)}km'
+                : '${distanceInMeters.toStringAsFixed(0)}m';
+
+            return Column(
+              children: [
+                // Seção Superior
+                Expanded(
+                  flex: 2,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text(
+                          'Tempo de permanência:',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        const SizedBox(
+                            height: 8), // Espaçamento entre os textos
+                        Text(
+                          '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
+                          style: const TextStyle(fontSize: 50),
+                        ),
+                        const SizedBox(
+                            height:
+                                16), // Espaçamento entre o cronômetro e o texto de distância
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Text(
+                            'Você está a $distanceText de distância desse evento.',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: distanceInMeters <= 10
+                                  ? Colors.green
+                                  : distanceInMeters >= 10 &&
+                                          distanceInMeters <= 20
+                                      ? Colors.yellow
+                                      : Colors.red,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Seção do Meio
+                Expanded(
+                  flex: 3,
+                  child: Container(
+                    margin: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.all(16.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: ListView.builder(
+                      itemCount: eventos.length,
+                      itemBuilder: (context, index) {
+                        return Text(eventos[index]); // Exibe cada evento
+                      },
+                    ),
+                  ),
+                ),
+                // Seção Inferior
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _handleCheckout();
+                    },
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        minimumSize: const Size(double.infinity, 50)),
+                    child: const Text('Realizar check-out',
+                        style: TextStyle(
+                          color: Colors.white,
+                        )),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
   _handleCheckout() async {
+    setState(() {
+      eventos
+          .add('[${formatter.format(DateTime.now())}] - Check-out realizado');
+    });
     return showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -151,6 +253,8 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
 
   _callCheckout() {
     // TODO: Implementar a lógica de checkout chamar o back-end para registrar a saída do aluno
-    Get.offNamed('/home');
+    Navigator.of(context).pop();
+    Navigator.of(context).pop(); // Fecha a página atual
+    Navigator.of(context).pop(); // Fecha a página atual
   }
 }

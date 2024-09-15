@@ -199,7 +199,6 @@ class EventoRepository extends ChangeNotifier {
       if (response.code != 200) {
         throw Exception(response.error);
       }
-
       return response.eventos ?? [];
     } catch (err) {
       rethrow;

@@ -38,6 +38,6 @@ class LocalizacaoService {
     double distancia = 12742 * asin(sqrt(a)); // 2 * R; R = 6371 km
 
     // Arredonda para 2 casas decimais e converte de volta para double
-    return double.parse(distancia.toStringAsFixed(2));
+    return double.parse(distancia.toStringAsFixed(4));
   }
 }

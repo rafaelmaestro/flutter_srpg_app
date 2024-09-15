@@ -50,7 +50,7 @@ class EventoCard extends StatelessWidget {
                   showModalBottomSheet(
                       context: appKey.currentState!.context,
                       builder: (context) =>
-                          EventoCheckInBottomSheet(aula: evento))
+                          EventoCheckInBottomSheet(evento: evento))
                 }
               else if (evento.status == 'PENDENTE' && isOrganizador)
                 {
