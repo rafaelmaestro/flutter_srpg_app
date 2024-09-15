@@ -233,6 +233,15 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
       return elementosExibidos;
     }
 
+    // TODO: verficar se existe algum evento onde o usuário é organizador com status 'EM_ANDAMENTO'
+    // Verificar se existe algum evento onde o usuário é organizador com status 'EM_ANDAMENTO'
+    bool existeEventoEmAndamento = widget.eventosOrganizados
+        .any((evento) => evento.status == 'EM_ANDAMENTO');
+
+    if (existeEventoEmAndamento) {
+      // Get.offAndToNamed('/evento/em-andamento');
+    }
+
     List<Evento> eventosOrganizados = List.from(widget.eventosOrganizados);
     List<Evento> eventosConvidado = List.from(widget.eventosConvidado);
     List<Evento> todosEventos = [];

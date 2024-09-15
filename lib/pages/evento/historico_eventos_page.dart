@@ -15,7 +15,6 @@ class HistoricoEventosPage extends StatefulWidget {
 }
 
 class _HistoricoEventosPageState extends State<HistoricoEventosPage> {
-  // TODO: provavelmente vai buscar uma query no backend que vai trazer mais dados além dos dados básicos de eventos
   String searchQuery = '';
   bool isOrganizadosChecked = true;
   bool isConvidadosChecked = true;
@@ -33,7 +32,6 @@ class _HistoricoEventosPageState extends State<HistoricoEventosPage> {
   }
 
   void _loadMeusEventos() async {
-    // TODO: Implementar a busca dos eventos do usuário (organizados e convidados) que ainda não foram realizados ou estão em andamento
     final prefs = await SharedPreferences.getInstance();
     final cpf = prefs.get('cpf').toString();
 

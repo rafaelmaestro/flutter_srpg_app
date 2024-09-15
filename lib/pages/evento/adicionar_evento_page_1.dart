@@ -1,5 +1,6 @@
 import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/evento/adicionar_evento_page_2.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
@@ -20,6 +21,10 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
   TextEditingController nomeController = TextEditingController();
   TextEditingController descricaoController = TextEditingController();
   TextEditingController localController = TextEditingController();
+  TextEditingController dataInicioController = TextEditingController();
+  TextEditingController horaInicioController = TextEditingController();
+  TextEditingController dataFimController = TextEditingController();
+  TextEditingController horaFimController = TextEditingController();
 
   @override
   void initState() {
@@ -96,9 +101,9 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                 nomeController.text = value;
                               },
                               validateFunction: (value) {
-                                // if (value == null || value.isEmpty) {
-                                //   return 'Por favor, insira um nome para o evento';
-                                // }
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, insira um nome para o evento';
+                                }
                                 return null;
                               },
                               prefixIcon: const Icon(
@@ -114,9 +119,9 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                 descricaoController.text = value;
                               },
                               validateFunction: (value) {
-                                // if (value == null || value.isEmpty) {
-                                //   return 'Por favor, insira um nome para o evento';
-                                // }
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, insira uma descrição para o evento';
+                                }
                                 return null;
                               },
                               maxLen: 200,
@@ -183,6 +188,16 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                           lastDate: DateTime(2100));
                                       return date;
                                     },
+                                    onChanged: (value) {
+                                      dataInicioController.text =
+                                          value.toString();
+                                    },
+                                    validator: (value) {
+                                      if (value == null) {
+                                        return 'Por favor, insira a data de início do evento';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ],
                               ),
@@ -235,6 +250,16 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                             currentValue ?? DateTime.now()),
                                       );
                                       return DateTimeField.convert(time);
+                                    },
+                                    onChanged: (value) {
+                                      horaInicioController.text =
+                                          value.toString();
+                                    },
+                                    validator: (value) {
+                                      if (value == null) {
+                                        return 'Por favor, insira a hora de início do evento';
+                                      }
+                                      return null;
                                     },
                                   ),
                                 ],
@@ -290,6 +315,15 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                           lastDate: DateTime(2100));
                                       return date;
                                     },
+                                    onChanged: (value) {
+                                      dataFimController.text = value.toString();
+                                    },
+                                    validator: (value) {
+                                      if (value == null) {
+                                        return 'Por favor, insira a data de fim do evento';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ],
                               ),
@@ -343,6 +377,15 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                       );
                                       return DateTimeField.convert(time);
                                     },
+                                    onChanged: (value) {
+                                      horaFimController.text = value.toString();
+                                    },
+                                    validator: (value) {
+                                      if (value == null) {
+                                        return 'Por favor, insira a hora de fim do evento';
+                                      }
+                                      return null;
+                                    },
                                   ),
                                 ],
                               ),
@@ -364,9 +407,9 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                 localController.text = value;
                               },
                               validateFunction: (value) {
-                                // if (value == null || value.isEmpty) {
-                                //   return 'Por favor, insira um nome para o evento';
-                                // }
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, insira o local do evento';
+                                }
                                 return null;
                               },
                               prefixIcon: const Icon(
@@ -427,7 +470,31 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
       return;
     }
 
-    Evento aulaASerCriada = Evento(
+    // Combinar dataInicioController e horaInicioController
+    final dataInicio = DateTime.parse(dataInicioController.text);
+    final horaInicio =
+        TimeOfDay.fromDateTime(DateTime.parse(horaInicioController.text));
+    final dataInicioPrevista = DateTime(
+      dataInicio.year,
+      dataInicio.month,
+      dataInicio.day,
+      horaInicio.hour,
+      horaInicio.minute,
+    );
+
+    // Combinar dataFimController e horaFimController
+    final dataFim = DateTime.parse(dataFimController.text);
+    final horaFim =
+        TimeOfDay.fromDateTime(DateTime.parse(horaFimController.text));
+    final dataFimPrevista = DateTime(
+      dataFim.year,
+      dataFim.month,
+      dataFim.day,
+      horaFim.hour,
+      horaFim.minute,
+    );
+
+    Evento eventoASerCriado = Evento(
       nome: nomeController.text,
       descricao: descricaoController.text,
       checkOuts: CheckOuts(total: 0, emails: []),
@@ -435,19 +502,16 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
       dtInicio: DateTime.now(),
       dtFim: DateTime.now(),
       checkIns: CheckIns(total: 0, emails: []),
-      id: 'SDDSSDSDSD',
-      dtInicioPrevista: DateTime.now(),
-      dtFimPrevista: DateTime.now(),
-      dtCriacao: DateTime.now(),
-      dtUltAtualizacao: DateTime.now(),
+      id: '',
+      dtInicioPrevista: dataInicioPrevista,
+      dtFimPrevista: dataFimPrevista,
       local: localController.text,
-      cpfOrganizador: '12345678900',
+      cpfOrganizador: '',
       status: 'PENDENTE',
     );
 
-    // TODO: Seguir p/ pagina 2 de cadastro de evento
     Get.to(() => AdicionarEventoPage2(
-          aulaASerCriada: aulaASerCriada,
+          eventoASerCriado: eventoASerCriado,
         ));
   }
 }

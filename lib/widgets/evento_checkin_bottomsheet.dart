@@ -30,7 +30,6 @@ class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
 
     if (fotoBiometria != null) {
       // Adicione a lógica de envio da foto para o servidor
-      print(fotoBiometria);
       await Future.delayed(const Duration(seconds: 10));
 
       // se retornar erro, retornar false

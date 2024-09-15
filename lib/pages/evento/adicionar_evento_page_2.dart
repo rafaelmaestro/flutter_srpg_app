@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
+import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class AdicionarEventoPage2 extends StatefulWidget {
-  Evento aulaASerCriada;
-  AdicionarEventoPage2({super.key, required this.aulaASerCriada});
+  Evento eventoASerCriado;
+  AdicionarEventoPage2({super.key, required this.eventoASerCriado});
 
   @override
   _EventoAlunoPageState createState() => _EventoAlunoPageState();
@@ -35,11 +36,6 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
 
     inputEmailController.dispose();
   }
-
-  // nome do evento
-  // descrição do evento
-  // data e hora do evento
-  // endereco do evento (cep, cidade, estado, rua, numero, complemento?)
 
   @override
   Widget build(BuildContext context) {
@@ -299,53 +295,67 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
     }
 
     for (var element in listController) {
-      widget.aulaASerCriada.adicionarConvidado(element.text);
+      widget.eventoASerCriado.adicionarConvidado(element.text);
     }
 
-    // TODO: Requisição p/ backend criar evento
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const AlertDialog(
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          content: Center(
-            child: CircularProgressIndicator(color: Color(0xFF0A6D92)),
-          ),
-        );
-      },
-    );
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const AlertDialog(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            content: Center(
+              child: CircularProgressIndicator(color: Color(0xFF0A6D92)),
+            ),
+          );
+        },
+      );
+      final eventoCriado = await EventoRepository().criarEvento(
+          criarEventoParams: CriarEventoParams(
+        cpfOrganizador: widget.eventoASerCriado.cpfOrganizador,
+        convidados: widget.eventoASerCriado.convidados.emails.toSet().toList(),
+        descricao: widget.eventoASerCriado.descricao,
+        dtFimPrevista: widget.eventoASerCriado.dtFimPrevista.toIso8601String(),
+        dtInicioPrevista:
+            widget.eventoASerCriado.dtInicioPrevista.toIso8601String(),
+        local: widget.eventoASerCriado.local,
+        nome: widget.eventoASerCriado.nome,
+      ));
 
-    print('Aula será criada com os seguintes parâmetros:');
-    print('Nome: ${widget.aulaASerCriada.nome}');
-    print('Descrição: ${widget.aulaASerCriada.descricao}');
-    print('Data de início: ${widget.aulaASerCriada.dtInicio}');
-    print('Data de fim: ${widget.aulaASerCriada.dtFim}');
-    print('Local: ${widget.aulaASerCriada.local}');
-    print('Latitude: ${widget.aulaASerCriada.latitude}');
-    print('Longitude: ${widget.aulaASerCriada.longitude}');
-    print('CPF do organizador: ${widget.aulaASerCriada.cpfOrganizador}');
-    print('Convidados: ${widget.aulaASerCriada.convidados}');
+      Get.snackbar(
+        'Evento criado com sucesso! 🎉',
+        'Agora é só esperar seus convidados no dia combinado! 📍',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.green,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
 
-    // Simulate a network request delay of 5 seconds.
-    await Future.delayed(const Duration(seconds: 5));
-
-    Get.snackbar(
-      'Evento criado com sucesso! 🎉',
-      'Agora é só esperar seus convidados no dia do evento! 📍',
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
-      duration: const Duration(seconds: 10),
-      showProgressIndicator: true,
-      progressIndicatorBackgroundColor: Colors.green,
-      progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
-        Colors.white,
-      ),
-      isDismissible: true,
-    );
-
-    Get.offNamed('/home');
+      Get.offNamed('/home');
+    } catch (err) {
+      Get.snackbar(
+        'Falha ao criar o evento! 😢',
+        'Por favor, tente novamente mais tarde.\nCaso o erro persista, entre em contato com o suporte em 📞 4002-8922 e informe o seguinte código: \n\n${err.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+      return;
+    }
   }
 }

@@ -35,13 +35,26 @@ class _CameraPageState extends State<CameraPage> {
       cameras = await availableCameras();
       _startCamera();
     } on CameraException catch (e) {
-      print(e.description);
+      rethrow;
     }
   }
 
   _startCamera() {
     if (cameras.isEmpty) {
-      print('Não há câmeras disponíveis');
+      Get.snackbar(
+        'Não há câmeras disponíveis! 😢',
+        'Erro desconhecido ao iniciar a câmera, tente novamente mais tarde ou entre em contato com o suporte em 4002-8922',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
     } else {
       _previewCamera(cameras.first);
     }
@@ -57,7 +70,7 @@ class _CameraPageState extends State<CameraPage> {
     try {
       await cameraController.initialize();
     } on CameraException catch (e) {
-      print(e.description);
+      rethrow;
     }
 
     if (mounted) {
@@ -232,7 +245,7 @@ class _CameraPageState extends State<CameraPage> {
           });
         }
       } on CameraException catch (e) {
-        print(e.description);
+        rethrow;
       }
     }
   }

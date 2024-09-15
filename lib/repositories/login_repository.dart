@@ -146,10 +146,7 @@ class LoginRepository {
 
     final responseData = jsonDecode(response.body);
 
-    print('Response: ${responseData['message']}');
-
     if (response.statusCode == 201 || response.statusCode == 200) {
-      print('Usuário cadastrado com sucesso ${response.statusCode}');
       return HttpResponse.fromJson({
         'code': response.statusCode,
         'error': null,

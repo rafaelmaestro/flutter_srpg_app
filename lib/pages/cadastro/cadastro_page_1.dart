@@ -26,7 +26,6 @@ class _CadastroPage1State extends State<CadastroPage1> {
     super.initState();
   }
 
-// TODO: validar os forms e criar um controller para armazenar os dados do usuário
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -258,7 +257,6 @@ class _CadastroPage1State extends State<CadastroPage1> {
       'senha': passwordController.text,
     };
 
-    // TODO: Seguir para página 2
     Get.to(() => CadastroPage2(usuario: usuario));
   }
 }

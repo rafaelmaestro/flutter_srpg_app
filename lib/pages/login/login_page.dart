@@ -1,5 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_srpg_app/helpers/is_numeric_helper.dart';
+import 'package:flutter_srpg_app/helpers/is_valid_email_helper.dart';
 import 'package:flutter_srpg_app/pages/cadastro/cadastro_page_1.dart';
 import 'package:flutter_srpg_app/pages/login/esqueceu_senha_page.dart';
 import 'package:flutter_srpg_app/repositories/login_repository.dart';
@@ -72,34 +74,33 @@ class _LogInState extends State<LogIn> {
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               MyInputField(
-                                label: "Email ou CPF",
+                                label: "E-mail ou CPF",
                                 placeholder: "Insira seu e-mail ou CPF",
                                 onChange: (value) {
                                   emailController.text = value;
                                 },
                                 isEmailOrCpfField: true,
                                 validateFunction: (value) {
-                                  // TODO: descomentar as validações
-                                  // if (value == null || value.isEmpty) {
-                                  //   return 'Por favor, insira seu e-mail ou CPF';
-                                  // }
+                                  if (value == null || value.isEmpty) {
+                                    return 'Por favor, insira seu e-mail ou CPF';
+                                  }
 
-                                  // if (isNumeric(value)) {
-                                  //   if (value.length != 11) {
-                                  //     return 'CPF inválido';
-                                  //   } else {
-                                  //     return null;
-                                  //   }
-                                  // }
+                                  if (isNumeric(value)) {
+                                    if (value.length != 11) {
+                                      return 'CPF inválido';
+                                    } else {
+                                      return null;
+                                    }
+                                  }
 
-                                  // if (value.contains('@') == true ||
-                                  //     isNumeric(value) == false) {
-                                  //   if (!isValidEmail(value)) {
-                                  //     return 'E-mail inválido';
-                                  //   } else {
-                                  //     return null;
-                                  //   }
-                                  // }
+                                  if (value.contains('@') == true ||
+                                      isNumeric(value) == false) {
+                                    if (!isValidEmail(value)) {
+                                      return 'E-mail inválido';
+                                    } else {
+                                      return null;
+                                    }
+                                  }
 
                                   return null;
                                 },
@@ -115,10 +116,9 @@ class _LogInState extends State<LogIn> {
                                 },
                                 isPasswordField: true,
                                 validateFunction: (value) {
-                                  // TODO: descomentar as validações
-                                  // if (value == null || value.isEmpty) {
-                                  //   return 'Senha não pode ser vazia';
-                                  // }
+                                  if (value == null || value.isEmpty) {
+                                    return 'Senha não pode ser vazia';
+                                  }
                                   return null;
                                 },
                               ),

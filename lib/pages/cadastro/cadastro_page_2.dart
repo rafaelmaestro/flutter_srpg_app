@@ -7,11 +7,6 @@ import 'package:flutter_srpg_app/pages/camera/camera_page.dart';
 import 'package:flutter_srpg_app/repositories/login_repository.dart';
 import 'package:get/get.dart';
 
-// cpf
-// nome
-// Email
-// foto
-// senha
 class CadastroPage2 extends StatefulWidget {
   final Map<String, String> usuario;
 
@@ -196,12 +191,6 @@ class _CadastroPage2State extends State<CadastroPage2> {
       // Converta os bytes para uma string base64
       final base64Image = base64Encode(bytes);
 
-      print('Cpf ${widget.usuario['cpf']}');
-      print('Nome ${widget.usuario['nome']}');
-      print('Email ${widget.usuario['email']}');
-      print('Senha ${widget.usuario['senha']}');
-
-      // TODO: chamar o backend para cadastrar o usuário
       final response = await loginRepository.signUp(
         widget.usuario['cpf'] ?? '',
         widget.usuario['nome'] ?? '',

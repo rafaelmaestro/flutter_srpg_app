@@ -11,8 +11,8 @@ class Evento {
   final double? longitude;
   final String local;
   final String cpfOrganizador;
-  final DateTime dtCriacao;
-  final DateTime dtUltAtualizacao;
+  final DateTime? dtCriacao;
+  final DateTime? dtUltAtualizacao;
   final Convidados convidados;
   final CheckIns checkIns;
   final CheckOuts checkOuts;
@@ -30,8 +30,8 @@ class Evento {
     this.longitude,
     required this.local,
     required this.cpfOrganizador,
-    required this.dtCriacao,
-    required this.dtUltAtualizacao,
+    this.dtCriacao,
+    this.dtUltAtualizacao,
     required this.convidados,
     required this.checkIns,
     required this.checkOuts,
@@ -66,13 +66,10 @@ class Evento {
 }
 
 class Convidados {
-  var total;
+  int total;
   final List<String> emails;
 
-  Convidados({
-    required this.total,
-    required this.emails,
-  });
+  Convidados({required this.total, required this.emails});
 
   factory Convidados.fromJson(Map<String, dynamic> json) {
     return Convidados(
@@ -83,13 +80,10 @@ class Convidados {
 }
 
 class CheckIns {
-  final int total;
+  int total;
   final List<String> emails;
 
-  CheckIns({
-    required this.total,
-    required this.emails,
-  });
+  CheckIns({required this.total, required this.emails});
 
   factory CheckIns.fromJson(Map<String, dynamic> json) {
     return CheckIns(
@@ -100,13 +94,10 @@ class CheckIns {
 }
 
 class CheckOuts {
-  final int total;
+  int total;
   final List<String> emails;
 
-  CheckOuts({
-    required this.total,
-    required this.emails,
-  });
+  CheckOuts({required this.total, required this.emails});
 
   factory CheckOuts.fromJson(Map<String, dynamic> json) {
     return CheckOuts(

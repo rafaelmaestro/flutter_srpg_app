@@ -13,8 +13,11 @@ class PosicaoController extends ChangeNotifier {
   Set<Marker> markers = <Marker>{};
   bool loadAulasBool;
   late GoogleMapController _mapsController;
+  Position? _currentPosition;
 
-  PosicaoController({this.loadAulasBool = false});
+  PosicaoController({this.loadAulasBool = false}) {
+    _iniciarStreamPosicao();
+  }
 
   get mapsController => _mapsController;
 
@@ -30,8 +33,6 @@ class PosicaoController extends ChangeNotifier {
       final aulas = await EventoRepository().getAulas();
 
       aulas.forEach((aula) async {
-        print(aula.latitude);
-        print(aula.longitude);
         if (aula.latitude != null && aula.longitude != null) {
           markers.add(Marker(
             markerId: MarkerId(aula.nome),
@@ -79,9 +80,9 @@ class PosicaoController extends ChangeNotifier {
 
   getPosicao() async {
     try {
-      Position posicao = await _posicaoAtual();
-      lat = posicao.latitude;
-      long = posicao.longitude;
+      _currentPosition = await _posicaoAtual();
+      lat = _currentPosition!.latitude;
+      long = _currentPosition!.longitude;
       _mapsController.animateCamera(CameraUpdate.newLatLng(LatLng(lat, long)));
     } catch (e) {
       erro = e.toString();
@@ -116,5 +117,51 @@ class PosicaoController extends ChangeNotifier {
 
     var currentLocation = await Geolocator.getCurrentPosition();
     return currentLocation;
+  }
+
+  void _iniciarStreamPosicao() async {
+    LocationPermission permissao;
+    bool ativado = await Geolocator.isLocationServiceEnabled();
+
+    if (!ativado) {
+      // Notifique o usuário para habilitar a localização
+      return Future.error('Por favor, habilite a localização no dispositivo');
+    }
+
+    permissao = await Geolocator.checkPermission();
+
+    if (permissao == LocationPermission.denied) {
+      permissao = await Geolocator.requestPermission();
+
+      if (permissao == LocationPermission.denied) {
+        return Future.error(
+            'Não foi possível obter a permissão para acessar a localização');
+      }
+    }
+
+    if (permissao == LocationPermission.deniedForever) {
+      return Future.error(
+          'A permissão para acessar a localização foi negada permanentemente, por favor, habilite a localização manualmente');
+    }
+
+    // Configurar o fluxo de posição
+    Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10, // Atualiza a cada 10 metros
+      ),
+    ).listen((Position position) {
+      _currentPosition = position;
+
+      final lat = _currentPosition!.latitude;
+      final long = _currentPosition!.longitude;
+
+      if (lat != 0.0 && long != 0.0) {
+        _mapsController.animateCamera(CameraUpdate.newLatLng(LatLng(lat,
+            long))); // Atualiza a câmera do mapa conforme atualiza a posição
+      }
+
+      notifyListeners();
+    });
   }
 }
