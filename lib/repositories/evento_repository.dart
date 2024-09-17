@@ -71,32 +71,19 @@ class EventosQueryParams {
   }
 }
 
-class CriarEventoResponse {
-//   {
-//     "evento": {
-//         "id": "01J7SHPS3MZ44RAS3G17HTGTCA",
-//         "nome": "Eventinho de Teste",
-//         "descricao": "Um evento sobre as últimas tendências em tecnologia.",
-//         "local": "São Paulo, SP",
-//         "cpf_organizador": "52776789808",
-//         "convidados": [
-//             "lucasudasilva@live.com.br",
-//             "tadeudasilva@live.com.br"
-//         ]
-//     }
-// }
+class EventoResponse {
   final int code;
   final String? error;
   final Evento evento;
 
-  CriarEventoResponse({
+  EventoResponse({
     required this.code,
     this.error,
     required this.evento,
   });
 
-  factory CriarEventoResponse.fromJson(Map<String, dynamic> json) {
-    return CriarEventoResponse(
+  factory EventoResponse.fromJson(Map<String, dynamic> json) {
+    return EventoResponse(
       code: json['code'] ?? 200,
       error: json['error'] as String?,
       evento: Evento.fromJson(json['evento'] as Map<String, dynamic>),
@@ -213,7 +200,7 @@ class EventoRepository extends ChangeNotifier {
     }
   }
 
-  Future<CriarEventoResponse> criarEvento(
+  Future<EventoResponse> criarEvento(
       {CriarEventoParams? criarEventoParams}) async {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.get('access_token');
@@ -239,12 +226,37 @@ class EventoRepository extends ChangeNotifier {
     final responseData = jsonDecode(response.body);
 
     if (response.statusCode == 201) {
-      return CriarEventoResponse.fromJson(responseData);
+      return EventoResponse.fromJson(responseData);
     } else {
-      return CriarEventoResponse.fromJson({
+      return EventoResponse.fromJson({
         'code': response.statusCode,
         'error': responseData['message'],
       });
+    }
+  }
+
+  Future<EventoResponse> getEvento(String id) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.get('access_token');
+
+      final response = await http.get(
+        Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/evento/$id'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode != 200) {
+        throw Exception(responseData['message']);
+      }
+
+      return EventoResponse.fromJson(responseData);
+    } catch (err) {
+      rethrow;
     }
   }
 }
