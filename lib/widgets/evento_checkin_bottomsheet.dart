@@ -5,10 +5,12 @@ import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/camera/camera_page.dart';
 import 'package:flutter_srpg_app/pages/evento/evento_aluno_page.dart';
 import 'package:flutter_srpg_app/pages/login/home_page.dart';
+import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/services/data_service.dart';
 import 'package:flutter_srpg_app/services/localizacao_service.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // ignore: must_be_immutable
 class EventoCheckInBottomSheet extends StatefulWidget {
@@ -150,7 +152,7 @@ class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
     });
 
     showDialog(
-      context: appKey.currentState!.context,
+      context: Get.context!,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return const AlertDialog(
@@ -163,34 +165,32 @@ class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
       },
     );
 
-    var biometria = await getBiometria();
+    try {
+      var biometria = await getBiometria();
 
-    Navigator.pop(context); // fecha o Dialog
+      if (biometria == true) {
+        final prefs = await SharedPreferences.getInstance();
+        final email = prefs.get('email').toString();
 
-    if (biometria == true) {
-      Get.snackbar(
-        'Check-in realizado com sucesso! 🎉',
-        'Por favor, permaneça no local do evento para que sua presença seja contabilizada! ✅',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 10),
-        showProgressIndicator: true,
-        progressIndicatorBackgroundColor: Colors.green,
-        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
-          Colors.white,
-        ),
-        isDismissible: true,
-      );
+        final response = await EventoRepository()
+            .realizarCheckIn(idEvento: widget.evento.id, emailConvidado: email);
 
-      Get.to(() => EventoAlunoPage(
-            evento: widget.evento,
-          ));
-    } else {
-      // TODO: exibir mensagens de erro diferentes para cada tipo de erro
+        setState(() {
+          isButtonClicked = false;
+        });
+
+        Get.to(() => EventoAlunoPage(
+              evento: widget.evento,
+              registros: response.registros,
+            ));
+      } else {
+        throw Exception(
+            'Erro desconhecido ao realizar check-in! \n Por favor, tente novamente mais tarde ou entre em contato com o suporte em 📞 4002-8922');
+      }
+    } catch (err) {
       Get.snackbar(
         'Erro ao realizar check-in! 😢',
-        'Erro desconhecido ao realizar check-in! \n Por favor, tente novamente mais tarde ou entre em contato com o suporte em 📞 4002-8922',
+        err.toString(),
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
@@ -202,10 +202,7 @@ class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
         ),
         isDismissible: true,
       );
-
-      setState(() {
-        isButtonClicked = false;
-      });
+      Navigator.pop(Get.context!);
     }
   }
 }

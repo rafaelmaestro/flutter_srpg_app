@@ -9,6 +9,36 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_config/flutter_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class Registro {
+  final String id;
+  final DateTime dtHoraCheckIn;
+  final DateTime? dtHoraCheckOut;
+
+  Registro({
+    required this.id,
+    required this.dtHoraCheckIn,
+    this.dtHoraCheckOut,
+  });
+
+  factory Registro.fromJson(Map<String, dynamic> json) {
+    return Registro(
+      id: json['id'],
+      dtHoraCheckIn: DateTime.parse(json['dt_hora_check_in']),
+      dtHoraCheckOut: json['dt_hora_check_out'] != null
+          ? DateTime.parse(json['dt_hora_check_out'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'dt_hora_check_in': dtHoraCheckIn.toIso8601String(),
+      'dt_hora_check_out': dtHoraCheckOut?.toIso8601String(),
+    };
+  }
+}
+
 class CriarEventoParams {
   final String nome;
   final String descricao;
@@ -68,6 +98,27 @@ class EventosQueryParams {
     }
 
     return params;
+  }
+}
+
+class RealizarCheckInOuCheckOutResponse {
+  final List<Registro> registros;
+
+  RealizarCheckInOuCheckOutResponse({required this.registros});
+
+  factory RealizarCheckInOuCheckOutResponse.fromJson(
+      Map<String, dynamic> json) {
+    var registrosJson = json['registros'] as List;
+    List<Registro> registrosList =
+        registrosJson.map((i) => Registro.fromJson(i)).toList();
+
+    return RealizarCheckInOuCheckOutResponse(registros: registrosList);
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'registros': registros.map((registro) => registro.toJson()).toList(),
+    };
   }
 }
 
@@ -255,6 +306,74 @@ class EventoRepository extends ChangeNotifier {
       }
 
       return EventoResponse.fromJson(responseData);
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+//   {
+//     "registros": [
+//         {
+//             "id": "01J816DT8VB8BM0EAMGBK2T4BK",
+//             "dt_hora_check_in": "2024-09-17T23:52:31.768Z",
+//             "dt_hora_check_out": null
+//         }
+//     ]
+// }
+
+  Future<RealizarCheckInOuCheckOutResponse> realizarCheckIn(
+      {required String idEvento, required String emailConvidado}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.get('access_token');
+
+      final response = await http.post(
+        Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') +
+            '/evento/check-in/$idEvento'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'email_convidado': emailConvidado,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode != 201) {
+        throw Exception(responseData['message']);
+      }
+      return RealizarCheckInOuCheckOutResponse.fromJson(responseData);
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<RealizarCheckInOuCheckOutResponse> realizarCheckOut(
+      {required String idEvento, required String emailConvidado}) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.get('access_token');
+
+      final response = await http.post(
+        Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') +
+            '/evento/check-out/$idEvento'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'email_convidado': emailConvidado,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode != 201) {
+        throw Exception(responseData['message']);
+      }
+      return RealizarCheckInOuCheckOutResponse.fromJson(responseData);
     } catch (err) {
       rethrow;
     }

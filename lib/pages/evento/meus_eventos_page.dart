@@ -305,6 +305,9 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
       todosEventos = [...eventosOrganizados, ...eventosConvidado];
     }
 
+    todosEventos =
+        todosEventos.where((evento) => evento.status != 'FINALIZADO').toList();
+
     todosEventos.sort(compareEventos);
     elementosExibidos.addAll(
       todosEventos.map((evento) {

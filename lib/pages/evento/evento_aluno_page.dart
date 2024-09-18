@@ -11,10 +11,13 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EventoAlunoPage extends StatefulWidget {
   final Evento evento;
-  const EventoAlunoPage({super.key, required this.evento});
+  final List<Registro> registros;
+  const EventoAlunoPage(
+      {super.key, required this.evento, required this.registros});
 
   @override
   _EventoAlunoPageState createState() => _EventoAlunoPageState();
@@ -30,6 +33,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
   List<String> eventos = [];
   final DateFormat formatter = DateFormat('dd/MM/yyyy HH:mm:ss');
   String? statusEventoAtual;
+  DateTime? dtFimEvento;
   int _httpErrorCount = 0;
   bool _isPaused = false; // Variável para indicar se o timer está pausado
   bool _isModalVisible =
@@ -85,8 +89,34 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
         ).toString();
         statusEventoAtual = widget.evento.status;
       });
+      adicionarEventos();
+
+      Get.snackbar(
+        'Check-in realizado com sucesso! 🎉',
+        'Por favor, permaneça no local do evento para que sua presença seja contabilizada! ✅',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.green,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
     });
-    eventos.add('[${formatter.format(DateTime.now())}] - Check-in realizado');
+  }
+
+  void adicionarEventos() {
+    for (var registro in widget.registros) {
+      eventos.add(
+          '[${formatter.format(registro.dtHoraCheckIn!)}] - Check-in realizado 🧑‍🎓');
+      if (registro.dtHoraCheckOut != null) {
+        eventos.add(
+            '[${formatter.format(registro.dtHoraCheckOut!)}] - Check-out realizado 🚪');
+      }
+    }
   }
 
   @override
@@ -104,7 +134,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
           children: [
             Text(
               widget.evento.nome,
-              style: TextStyle(
+              style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 22,
                   color: Colors.white),
@@ -144,14 +174,13 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
                 !_isModalVisible) {
               _isModalVisible = true;
               Future.delayed(Duration.zero, () {
-                _showDistanceWarningModal(appKey.currentState!.context);
+                _showDistanceWarningModal();
               });
             } else if (distanceInMeters <= MAX_DISTANCE_FROM_EVENT &&
                 _isModalVisible) {
-              Navigator.of(context, rootNavigator: true).pop();
+              Get.back();
               _isModalVisible = false;
             }
-            // TODO: ABRIR UM MODAL PARA AVISAR QUE O USUÁRIO ESTÁ LONGE DEMAIS DO EVENTO E EXIBIR UM CONTADOR DE TEMPO PARA O CHECK-OUT AUTOMÁTICO QUE É DEFINIDO EM MAX_TIME_TOLERANCE_FROM_EVENT, ALÉM DE UM BOTÃO PARA REALIZAR O CHECK-OUT MANUALMENTE
 
             return Column(
               children: [
@@ -167,12 +196,12 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
                           padding: const EdgeInsets.symmetric(
                               vertical: 8.0, horizontal: 16.0),
                           decoration: BoxDecoration(
-                            color: _getStatusColor(widget.evento
-                                .status), // Cor de fundo baseada no status
+                            color: _getStatusColor(statusEventoAtual ??
+                                'Em andamento'), // Cor de fundo baseada no status
                             borderRadius: BorderRadius.circular(20.0),
                           ),
                           child: Text(
-                            _formatStatus(widget.evento.status),
+                            _formatStatus(statusEventoAtual ?? 'Em andamento'),
                             style: const TextStyle(
                               color: Colors.white, // Cor do texto
                               fontSize: 16,
@@ -260,12 +289,8 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
   }
 
   _handleCheckout() async {
-    setState(() {
-      eventos
-          .add('[${formatter.format(DateTime.now())}] - Check-out realizado');
-    });
     return showDialog(
-      context: appKey.currentState!.context,
+      context: Get.context!,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text(
@@ -288,7 +313,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
                   minimumSize: const Size(double.infinity, 50),
                 ),
                 onPressed: () {
-                  _callCheckout(appKey.currentState!.context);
+                  _callCheckout();
                 },
                 child: const Text('Sim, quero sair!'),
               ),
@@ -304,7 +329,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
                   minimumSize: const Size(double.infinity, 50),
                 ),
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  Get.back();
                 },
                 child: const Text('Quero ficar mais um pouco!'),
               ),
@@ -315,8 +340,47 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
     );
   }
 
-  _callCheckout(BuildContext context) {
-    Get.offAll(() => const HomePage());
+  _callCheckout() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final email = prefs.get('email').toString();
+
+      await EventoRepository()
+          .realizarCheckOut(idEvento: widget.evento.id, emailConvidado: email);
+
+      Get.snackbar(
+        'Check-out realizado! 🚪',
+        'Seu check-out foi realizado com sucesso. Obrigado por participar! 🎉',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.green,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+
+      Get.off(() =>
+          const HomePage()); // Isso remove a página atual e navega para a HomePage
+    } catch (err) {
+      Get.snackbar(
+        'Erro ao realizar check-out! 😢',
+        'Por favor, tente novamente mais tarde.\nCaso o erro persista, entre em contato com o suporte em 📞 4002-8922 e informe o seguinte código: \n\n${err.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+    }
   }
 
   Future<void> _makeHttpRequest() async {
@@ -325,21 +389,22 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
           .getEvento(widget.evento.id); // Faz a requisição HTTP
 
       if (response.evento.status == 'FINALIZADO') {
-        // _handleEventoFinalizado();
+        _handleEventoFinalizado();
       }
 
       if (response.evento.status == 'EM_ANDAMENTO' &&
           statusEventoAtual != 'EM_ANDAMENTO') {
-        // _handleEventoEmAndamento();
+        _handleEventoEmAndamento();
       }
 
       if (response.evento.status == 'PAUSADO' &&
           statusEventoAtual != 'PAUSADO') {
-        // _handleEventoPausado();
+        _handleEventoPausado();
       }
 
       setState(() {
         statusEventoAtual = response.evento.status;
+        dtFimEvento = response.evento.dtFim;
       });
     } catch (err) {
       setState(() {
@@ -347,11 +412,90 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
       });
 
       if (_httpErrorCount >= MAX_HTTP_ERROR_COUNT) {
-        // TODO: Se o número de erros HTTP for maior ou igual ao limite, exibe um diálogo de erro
-        // TODO: Realizar checkout e fecha a página
+        _handleErroConexao();
       }
       print('Erro ao fazer requisição HTTP: $err');
     }
+  }
+
+  _handleErroConexao() {
+    Get.snackbar(
+      'Erro de conexão! 😢',
+      'Parece que você está sem conexão com a internet. Fizemos o check-out automaticamente para você. \n\n Caso tenha algum problema, peça ao organizador para verificar a sua presença.',
+      backgroundColor: Colors.red,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 10),
+      showProgressIndicator: true,
+      progressIndicatorBackgroundColor: Colors.red,
+      progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+        Colors.white,
+      ),
+      isDismissible: true,
+    );
+    _callCheckout();
+  }
+
+  _handleEventoFinalizado() {
+    Get.snackbar(
+      'O evento foi finalizado! 🏁',
+      'O organizador encerrou o evento e o seu check-out foi realizado de forma automática. \n\nObrigado por participar! 🎉',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 10),
+      showProgressIndicator: true,
+      progressIndicatorBackgroundColor: Colors.green,
+      progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+        Colors.white,
+      ),
+      isDismissible: true,
+    );
+    _callCheckout();
+  }
+
+  _handleEventoPausado() {
+    pauseTimer();
+    Get.snackbar(
+      'O evento foi pausado! ⏸️',
+      'O organizador pausou o evento. Você pode relaxar um pouco e aproveitar o tempo para descansar. 😴',
+      backgroundColor: Colors.orange,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 10),
+      showProgressIndicator: true,
+      progressIndicatorBackgroundColor: Colors.orange,
+      progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+        Colors.white,
+      ),
+      isDismissible: true,
+    );
+    setState(() {
+      eventos.add(
+          '[${formatter.format(DateTime.now())}] - Evento pausado pelo organizador 🛑');
+    });
+  }
+
+  _handleEventoEmAndamento() {
+    resumeTimer();
+    Get.snackbar(
+      'O evento foi retomado! ▶️',
+      'O organizador retomou o evento. \n Você deve continuar no local para que sua presença seja contabilizada. ✅',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 10),
+      showProgressIndicator: true,
+      progressIndicatorBackgroundColor: Colors.green,
+      progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+        Colors.white,
+      ),
+      isDismissible: true,
+    );
+    setState(() {
+      eventos.add(
+          '[${formatter.format(DateTime.now())}] - Evento retomado pelo organizador ▶️');
+    });
   }
 
   String _formatStatus(String status) {
@@ -370,7 +514,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
     }
   }
 
-  void _showDistanceWarningModal(BuildContext context) {
+  void _showDistanceWarningModal() {
     int countdown =
         MAX_MINUTES_TIME_TOLERANCE_FROM_EVENT * 60; // 10 minutos em segundos
     Timer? countdownTimer;
@@ -388,10 +532,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
               timer.cancel();
               if (!hasCheckedOut) {
                 hasCheckedOut = true;
-                print('------------------');
-                print('Usuário desconectado');
-                print('------------------');
-                _callCheckout(appKey.currentState!.context);
+                _callCheckout();
               }
             }
           });
@@ -408,9 +549,11 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
     }
 
     if (!isModalOpen) {
+      eventos.add(
+          '[${formatter.format(DateTime.now())}] - Aviso de distância: Você está longe demais do evento! 🚨');
       isModalOpen = true;
       showDialog(
-        context: context,
+        context: Get.context!,
         barrierDismissible: false,
         builder: (BuildContext context) {
           return StatefulBuilder(
@@ -454,9 +597,8 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
                         countdownTimer?.cancel();
                         if (!hasCheckedOut) {
                           hasCheckedOut = true;
-                          _callCheckout(appKey.currentState!.context);
+                          _callCheckout();
                         }
-                        Navigator.of(context).pop();
                       },
                       child: const Text(
                         'Quero sair!',

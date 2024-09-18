@@ -4,6 +4,7 @@ import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/helpers/format_duration.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/services/localizacao_service.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -100,7 +101,7 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
     });
 
     showDialog(
-      context: context,
+      context: Get.context!,
       barrierDismissible: false,
       builder: (BuildContext context) {
         return const AlertDialog(
@@ -112,7 +113,5 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
         );
       },
     );
-
-    Navigator.pop(context); // fecha o Dialog
   }
 }

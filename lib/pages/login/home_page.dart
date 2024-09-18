@@ -4,8 +4,6 @@ import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
-final appKey = GlobalKey();
-
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -19,7 +17,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: appKey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
         title: const Column(

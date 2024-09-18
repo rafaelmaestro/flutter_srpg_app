@@ -258,7 +258,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
   _handleCriarEvento() async {
     if (listController.isEmpty) {
       return showDialog(
-        context: context,
+        context: Get.context!,
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text(
@@ -283,7 +283,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
                     minimumSize: const Size(double.infinity, 50),
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
+                    Get.back();
                   },
                   child: const Text('Ok, vou adicionar alguém!'),
                 ),

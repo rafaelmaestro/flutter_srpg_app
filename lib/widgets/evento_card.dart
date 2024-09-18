@@ -4,6 +4,7 @@ import 'package:flutter_srpg_app/pages/login/home_page.dart';
 import 'package:flutter_srpg_app/services/data_service.dart';
 import 'package:flutter_srpg_app/widgets/evento_checkin_bottomsheet.dart';
 import 'package:flutter_srpg_app/widgets/evento_iniciar_bottomsheet.dart';
+import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 class EventoCard extends StatelessWidget {
@@ -48,21 +49,21 @@ class EventoCard extends StatelessWidget {
               if (evento.status == 'EM_ANDAMENTO' && !isOrganizador)
                 {
                   showModalBottomSheet(
-                      context: appKey.currentState!.context,
+                      context: context,
                       builder: (context) =>
                           EventoCheckInBottomSheet(evento: evento))
                 }
               else if (evento.status == 'PENDENTE' && isOrganizador)
                 {
                   showModalBottomSheet(
-                      context: appKey.currentState!.context,
+                      context: context,
                       builder: (context) =>
                           EventoIniciarBottomSheet(evento: evento))
                 }
               else
                 {
                   showDialog(
-                    context: appKey.currentState!.context,
+                    context: Get.context!,
                     builder: (BuildContext context) {
                       return AlertDialog(
                         title: const Text(
@@ -88,7 +89,7 @@ class EventoCard extends StatelessWidget {
                                 minimumSize: const Size(double.infinity, 50),
                               ),
                               onPressed: () {
-                                Navigator.of(context).pop();
+                                Get.back();
                               },
                               child: const Text('Ok, entendi!'),
                             ),

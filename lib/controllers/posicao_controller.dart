@@ -28,6 +28,12 @@ class PosicaoController extends ChangeNotifier {
     loadEventosBool == false ? addEventoMarker(LatLng(lat, long)) : null;
   }
 
+  @override
+  void dispose() {
+    _mapsController.dispose();
+    super.dispose();
+  }
+
   void _updatePosition(Position position) {
     lat = position.latitude;
     long = position.longitude;
@@ -39,7 +45,9 @@ class PosicaoController extends ChangeNotifier {
       final aulas = await EventoRepository().getAulas();
 
       aulas.forEach((aula) async {
-        if (aula.latitude != null && aula.longitude != null) {
+        if (aula.latitude != null &&
+            aula.longitude != null &&
+            aula.status != 'FINALIZADO') {
           markers.add(Marker(
             markerId: MarkerId(aula.nome),
             position: LatLng(aula.latitude!, aula.longitude!),
@@ -47,7 +55,7 @@ class PosicaoController extends ChangeNotifier {
                 const ImageConfiguration(), 'lib/assets/app/aulas_icon.png'),
             onTap: () => {
               showModalBottomSheet(
-                  context: appKey.currentState!.context,
+                  context: Get.context!,
                   builder: (context) => EventoCheckInBottomSheet(evento: aula))
             },
           ));
