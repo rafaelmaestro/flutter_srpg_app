@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/constants/constants.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
@@ -23,9 +22,11 @@ class EventoAlunoPage extends StatefulWidget {
   _EventoAlunoPageState createState() => _EventoAlunoPageState();
 }
 
-class _EventoAlunoPageState extends State<EventoAlunoPage> {
+class _EventoAlunoPageState extends State<EventoAlunoPage>
+    with WidgetsBindingObserver {
   Timer? _timer;
   Timer? _httpTimer;
+  Timer? _checkDistanceTimer;
   int _start = 0;
   late Future<void> _futurePosicao;
   late PosicaoController local;
@@ -35,6 +36,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
   String? statusEventoAtual;
   DateTime? dtFimEvento;
   int _httpErrorCount = 0;
+  ValueNotifier<int> countdownNotifier = ValueNotifier<int>(0);
   bool _isPaused = false; // Variável para indicar se o timer está pausado
   bool _isModalVisible =
       false; // Variável para controlar se o modal está visível
@@ -64,11 +66,96 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
     });
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed) {
+      _startDistanceCheckTimer();
+    } else {
+      print('VOLTEI PARA O APP!');
+      _checkDistanceTimer?.cancel();
+      // _checkNovosRegistros();
+    }
+  }
+
+  // Aparentemente não é necessário
+  // _checkNovosRegistros() async {
+  //   try {
+  //     final prefs = await SharedPreferences.getInstance();
+  //     final email = prefs.get('email').toString();
+
+  //     final response = await EventoRepository().getRegistrosCheckIn(
+  //         idEvento: widget.evento.id, emailConvidado: email);
+
+  //     if (response.registros.isNotEmpty) {
+  //       final ultimoRegistro = response.registros.last;
+  //       if (ultimoRegistro.dtHoraCheckOut != null) {
+  //         eventos.add(
+  //             '[${formatter.format(ultimoRegistro.dtHoraCheckOut!)}] - Check-out realizado 🚪');
+  //         Get.off(() => const HomePage());
+  //         Get.snackbar(
+  //           'Check-out realizado! 🚪',
+  //           'Parece que você se desconectou do evento. Seu check-out foi realizado automaticamente. Obrigado por participar! 🎉',
+  //           backgroundColor: Colors.orange,
+  //           colorText: Colors.white,
+  //           snackPosition: SnackPosition.TOP,
+  //           duration: const Duration(seconds: 10),
+  //           showProgressIndicator: true,
+  //           progressIndicatorBackgroundColor: Colors.green,
+  //           progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+  //             Colors.white,
+  //           ),
+  //           isDismissible: true,
+  //         );
+  //       }
+  //     }
+  //   } catch (err) {
+  //     print('Erro ao buscar novos registros: $err');
+  //   }
+  // }
+
   void startHttpTimer() {
     _httpTimer = Timer.periodic(
       const Duration(minutes: 1),
       (Timer timer) => _makeHttpRequest(),
     );
+  }
+
+  void _startDistanceCheckTimer() {
+    _checkDistanceTimer?.cancel(); // Cancel any existing timer
+    _checkDistanceTimer = Timer.periodic(Duration(seconds: 10), (timer) {
+      print('Verificando distância...');
+      _checkDistance();
+    });
+  }
+
+  void _checkDistance() async {
+    final double eventLat = widget.evento.latitude!;
+    final double eventLong = widget.evento.longitude!;
+
+    final posicaoController =
+        Provider.of<PosicaoController>(context, listen: false);
+    double distanceInMeters = Geolocator.distanceBetween(
+      posicaoController.lat,
+      posicaoController.long,
+      eventLat,
+      eventLong,
+    );
+
+    if (distanceInMeters > MAX_DISTANCE_FROM_EVENT &&
+        statusEventoAtual == 'EM_ANDAMENTO' &&
+        !_isModalVisible) {
+      setState(() {
+        _isModalVisible = true;
+      });
+      Future.delayed(Duration.zero, () {
+        _showDistanceWarningModal();
+      });
+    } else if (distanceInMeters <= MAX_DISTANCE_FROM_EVENT && _isModalVisible) {
+      Get.back();
+      setState(() {
+        _isModalVisible = false;
+      });
+    }
   }
 
   @override
@@ -105,6 +192,8 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
         ),
         isDismissible: true,
       );
+
+      WidgetsBinding.instance!.addObserver(this);
     });
   }
 
@@ -117,11 +206,22 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
             '[${formatter.format(registro.dtHoraCheckOut!)}] - Check-out realizado 🚪');
       }
     }
+
+    if (widget.registros.isNotEmpty) {
+      var ultimoRegistro = widget.registros.last;
+      if (ultimoRegistro.dtHoraCheckOut != null) {
+        // Se o último registro tiver check-in e check-out, o check-out automático já foi feito
+      }
+    }
   }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _httpTimer?.cancel();
+    _checkDistanceTimer?.cancel();
+    countdownNotifier.dispose();
+    WidgetsBinding.instance!.removeObserver(this);
     super.dispose();
   }
 
@@ -342,6 +442,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
 
   _callCheckout() async {
     try {
+      print('Realizando check-out...');
       final prefs = await SharedPreferences.getInstance();
       final email = prefs.get('email').toString();
 
@@ -385,6 +486,9 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
 
   Future<void> _makeHttpRequest() async {
     try {
+      print('-------------------------------');
+      print('Fazendo requisição HTTP...');
+      print('-------------------------------');
       final response = await EventoRepository()
           .getEvento(widget.evento.id); // Faz a requisição HTTP
 
@@ -521,26 +625,22 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
     bool isModalOpen = false;
     bool hasCheckedOut = false;
 
-    void startCountdown(StateSetter setState) {
-      countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        if (mounted) {
-          setState(() {
-            if (countdown > 0) {
-              countdown--;
-              print('${DateTime.now()} Contagem regressiva: $countdown');
-            } else {
-              timer.cancel();
-              if (!hasCheckedOut) {
-                hasCheckedOut = true;
-                _callCheckout();
-              }
-            }
-          });
-        } else {
-          timer.cancel();
+    print('LONGE DEMAIS DO EVENTO!');
+
+    countdownNotifier.value = countdown;
+    countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (countdownNotifier.value > 0) {
+        countdownNotifier.value--;
+        print(
+            '${DateTime.now()} Contagem regressiva: ${countdownNotifier.value}');
+      } else {
+        timer.cancel();
+        if (!hasCheckedOut) {
+          hasCheckedOut = true;
+          _callCheckout();
         }
-      });
-    }
+      }
+    });
 
     String _formatCountdown(int seconds) {
       final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
@@ -556,19 +656,16 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
         context: Get.context!,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          return StatefulBuilder(
-            builder: (context, setState) {
-              if (countdownTimer == null || !countdownTimer!.isActive) {
-                startCountdown(
-                    setState); // Iniciar o countdown quando o diálogo for exibido
-              }
-              return AlertDialog(
-                title: const Text(
-                  'Aviso de distância 🚨',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                content: Column(
+          return AlertDialog(
+            title: const Text(
+              'Aviso de distância 🚨',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: ValueListenableBuilder<int>(
+              valueListenable: countdownNotifier,
+              builder: (context, value, child) {
+                return Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
@@ -577,38 +674,38 @@ class _EventoAlunoPageState extends State<EventoAlunoPage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      _formatCountdown(countdown),
+                      _formatCountdown(value),
                       style: const TextStyle(
                         fontSize: 50,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ],
-                ),
-                actions: <Widget>[
-                  Center(
-                    child: TextButton(
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.red,
-                        side: const BorderSide(color: Colors.red, width: 2),
-                        minimumSize: const Size(double.infinity, 50),
-                      ),
-                      onPressed: () {
-                        countdownTimer?.cancel();
-                        if (!hasCheckedOut) {
-                          hasCheckedOut = true;
-                          _callCheckout();
-                        }
-                      },
-                      child: const Text(
-                        'Quero sair!',
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
+                );
+              },
+            ),
+            actions: <Widget>[
+              Center(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red, width: 2),
+                    minimumSize: const Size(double.infinity, 50),
                   ),
-                ],
-              );
-            },
+                  onPressed: () {
+                    countdownTimer?.cancel();
+                    if (!hasCheckedOut) {
+                      hasCheckedOut = true;
+                      _callCheckout();
+                    }
+                  },
+                  child: const Text(
+                    'Quero sair!',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ).then((_) {

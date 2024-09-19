@@ -175,6 +175,11 @@ class PosicaoController extends ChangeNotifier {
       lat = _currentPosition!.latitude;
       long = _currentPosition!.longitude;
 
+      print('---------------- ATUALIZOU A POSIÇÃO ----------------');
+      print('Latitude: $lat');
+      print('Longitude: $long');
+      print('-----------------------------------------------------');
+
       if (lat != 0.0 && long != 0.0) {
         _updatePosition(position);
 
