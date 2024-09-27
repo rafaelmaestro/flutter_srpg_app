@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
+import 'package:flutter_srpg_app/repositories/login_repository.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PerfilPage extends StatefulWidget {
   PerfilPage({super.key});
@@ -12,8 +15,14 @@ class PerfilPage extends StatefulWidget {
 }
 
 class _PerfilPageState extends State<PerfilPage> {
+  String nomeUsuario = '';
+  String cpfUsuario = '';
+  String emailUsuario = '';
+  String dtCriacaoUsuario = '';
+
   @override
   void initState() {
+    _getUser();
     super.initState();
   }
 
@@ -21,11 +30,6 @@ class _PerfilPageState extends State<PerfilPage> {
   void dispose() {
     super.dispose();
   }
-
-  // nome do evento
-  // descrição do evento
-  // data e hora do evento
-  // endereco do evento (cep, cidade, estado, rua, numero, complemento?)
 
   @override
   Widget build(BuildContext context) {
@@ -54,21 +58,21 @@ class _PerfilPageState extends State<PerfilPage> {
       body: Column(
         children: [
           const SizedBox(height: 20),
-          const Center(
+          Center(
             child: CircleAvatar(
               radius: 50, // Tamanho do avatar
-              backgroundColor: Color(0xFF0A6D92),
+              backgroundColor: const Color(0xFF0A6D92),
               foregroundColor: Colors.white,
               child: Text(
-                'A', // TODO: Substitua 'A' pela primeira letra do nome do usuário
-                style: TextStyle(fontSize: 32),
+                nomeUsuario[0],
+                style: const TextStyle(fontSize: 32),
               ),
             ),
           ),
           const SizedBox(height: 20),
-          const Text(
-            'Nome do Usuário', // TODO: Substitua 'Nome do Usuário' pelo nome do usuário
-            style: TextStyle(
+          Text(
+            nomeUsuario.toUpperCase(),
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 24,
             ),
@@ -113,14 +117,13 @@ class _PerfilPageState extends State<PerfilPage> {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      const Text(
-                        'CPF: 123.456.789-00', // TODO: Substitua '123.456.789-00' pelo CPF do usuário
+                      Text(
+                        cpfUsuario,
                       ),
                       const SizedBox(height: 20),
                       const Text('E-mail: email-exemplo@email.com'),
                       const SizedBox(height: 20),
-                      const Text(
-                          'Entrou em: 01/01/2021'), // TODO: Alterar valores
+                      Text(dtCriacaoUsuario), // TODO: Alterar valores
                       const SizedBox(height: 20),
                       Divider(
                         color: Colors.grey.withOpacity(.3),
@@ -186,5 +189,38 @@ class _PerfilPageState extends State<PerfilPage> {
       ),
       bottomNavigationBar: const SRPGNavigationBar(),
     );
+  }
+
+  _getUser() async {
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String? cpf = prefs.getString('cpf');
+
+      if (cpf != null) {
+        final usuario = await LoginRepository().getUser(cpf);
+
+        setState(() {
+          nomeUsuario = usuario.nome ?? 'No name';
+          cpfUsuario = usuario.cpf ?? '123.456.789-00';
+          emailUsuario = usuario.email ?? 'noemail@email.com';
+          dtCriacaoUsuario = usuario.dtCriacao ?? '01/01/2021';
+        });
+      }
+    } catch (err) {
+      Get.snackbar(
+        'Erro ao buscar o usuário! 😢',
+        'Erro desconhecido ao buscar usuário, tente novamente mais tarde ou entre em contato com o suporte em 4002-8922',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+    }
   }
 }
