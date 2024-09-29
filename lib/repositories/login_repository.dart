@@ -20,8 +20,8 @@ class UserResponse {
   final String? cpf;
   final String? nome;
   final String? email;
-  final String? dtCriacao;
-  final String? dtUltAtualizacao;
+  final DateTime? dtCriacao;
+  final DateTime? dtUltAtualizacao;
   final Biometria? biometria;
   final String? error;
 
@@ -39,17 +39,12 @@ class UserResponse {
   factory UserResponse.fromJson(Map<String, dynamic> json) {
     return UserResponse(
       code: json['code'],
-      cpf: json.containsKey('cpf') ? json['cpf'] : null,
-      nome: json.containsKey('nome') ? json['nome'] : null,
-      email: json.containsKey('email') ? json['email'] : null,
-      dtCriacao: json.containsKey('dt_criacao') ? json['dt_criacao'] : null,
-      dtUltAtualizacao: json.containsKey('dt_ult_atualizacao')
-          ? json['dt_ult_atualizacao']
-          : null,
-      biometria: json.containsKey('biometria')
-          ? Biometria.fromJson(json['biometria'])
-          : null,
-      error: json.containsKey('error') ? json['error'] : null,
+      error: json['error'],
+      nome: json['nome'],
+      email: json['email'],
+      dtCriacao: DateTime.parse(json['dt_criacao']),
+      dtUltAtualizacao: DateTime.parse(json['dt_ult_atualizacao']),
+      biometria: Biometria.fromJson(json['biometria']),
     );
   }
 }
@@ -217,93 +212,101 @@ class LoginRepository {
     }
   }
 
-  Future<UserResponse> updateProfile(
-      String email, String senha, String foto) async {
+  Future<UserResponse> updateProfile(String? email, String? emailNovo,
+      String? senha, String? senhaAntiga, String? foto) async {
     final prefs = await SharedPreferences.getInstance();
 
     final accessToken = prefs.get('access_token');
 
     final usuarioParaAtualizar = {};
 
-    if (email.isNotEmpty) {
+    if (email != null && email.isNotEmpty) {
       usuarioParaAtualizar['email'] = email;
     }
 
-    if (senha.isNotEmpty) {
+    if (senha != null && senha.isNotEmpty) {
       usuarioParaAtualizar['senha'] = senha;
     }
 
-    if (foto.isNotEmpty) {
+    if (senhaAntiga != null && senhaAntiga.isNotEmpty) {
+      usuarioParaAtualizar['senha_antiga'] = senhaAntiga;
+    }
+
+    if (foto != null && foto.isNotEmpty) {
       usuarioParaAtualizar['foto'] = foto;
     }
 
-    final response = await http.patch(
-      Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/usuario'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $accessToken',
-      },
-      body: jsonEncode(<String, String>{
-        'email': email,
-        'senha': senha,
-        'foto': foto,
-      }),
-    );
+    if (emailNovo != null && emailNovo.isNotEmpty) {
+      usuarioParaAtualizar['email_novo'] = emailNovo;
+    }
 
-    final responseData = jsonDecode(response.body);
+    print('--------------------User para atualziar --------------');
+    print(jsonEncode(usuarioParaAtualizar));
+    print('-------------------------------------');
 
-    if (response.statusCode == 200) {
-      return UserResponse.fromJson({
-        'code': response.statusCode,
-        'error': null,
-      });
-    } else {
-      String errorMessage;
-      if (responseData['message'] is List) {
-        errorMessage = (responseData['message'] as List).join('\n');
-      } else {
-        errorMessage = responseData['message'] ?? 'Erro ao atualizar perfil!';
+    try {
+      final response = await http.patch(
+        Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/usuario'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(usuarioParaAtualizar),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      print('-------------------------------------');
+      print(responseData);
+      print('-------------------------------------');
+
+      if (response.statusCode != 200) {
+        throw Exception(responseData['message']);
       }
-
       return UserResponse.fromJson({
         'code': response.statusCode,
-        'error': errorMessage,
+        'cpf': responseData['cpf'],
+        'nome': responseData['nome'],
+        'email': responseData['email'],
+        'dt_criacao': responseData['dt_criacao'],
+        'dt_ult_atualizacao': responseData['dt_ult_atualizacao'],
+        'biometria': responseData['biometria'],
       });
+    } catch (err) {
+      rethrow;
     }
   }
 
   Future<UserResponse> getUser(String cpf) async {
-    final prefs = await SharedPreferences.getInstance();
+    try {
+      final prefs = await SharedPreferences.getInstance();
 
-    final accessToken = prefs.get('access_token');
+      final accessToken = prefs.get('access_token');
 
-    final response = await http.get(
-      Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/usuario/$cpf'),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Authorization': 'Bearer $accessToken',
-      },
-    );
+      final response = await http.get(
+        Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/usuario/$cpf'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
 
-    final responseData = jsonDecode(response.body);
+      final responseData = jsonDecode(response.body);
 
-    if (response.statusCode == 200) {
-      return UserResponse.fromJson({
-        'code': response.statusCode,
-        'error': null,
-      });
-    } else {
-      String errorMessage;
-      if (responseData['message'] is List) {
-        errorMessage = (responseData['message'] as List).join('\n');
-      } else {
-        errorMessage = responseData['message'] ?? 'Erro ao buscar usuário!';
+      if (response.statusCode != 200) {
+        throw Exception(responseData['message']);
       }
-
       return UserResponse.fromJson({
         'code': response.statusCode,
-        'error': errorMessage,
+        'cpf': responseData['cpf'],
+        'nome': responseData['nome'],
+        'email': responseData['email'],
+        'dt_criacao': responseData['dt_criacao'],
+        'dt_ult_atualizacao': responseData['dt_ult_atualizacao'],
+        'biometria': responseData['biometria'],
       });
+    } catch (err) {
+      rethrow;
     }
   }
 }

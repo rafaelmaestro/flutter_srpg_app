@@ -486,9 +486,6 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
 
   Future<void> _makeHttpRequest() async {
     try {
-      print('-------------------------------');
-      print('Fazendo requisição HTTP...');
-      print('-------------------------------');
       final response = await EventoRepository()
           .getEvento(widget.evento.id); // Faz a requisição HTTP
 

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/helpers/format_duration.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
+import 'package:flutter_srpg_app/pages/evento/evento_organizador_page.dart';
 import 'package:flutter_srpg_app/services/localizacao_service.dart';
 import 'package:get/get.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +20,6 @@ class EventoIniciarBottomSheet extends StatefulWidget {
 }
 
 class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
-  XFile arquivo = XFile('');
   LocalizacaoService service = LocalizacaoService();
   bool isButtonClicked = false;
 
@@ -78,7 +78,7 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
               // child: CircularProgressIndicator()
               child: ElevatedButton(
                 onPressed: () {
-                  handleCheckIn();
+                  handleInitEvento();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF0A6D92),
@@ -95,7 +95,7 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
     );
   }
 
-  handleCheckIn() async {
+  handleInitEvento() async {
     setState(() {
       isButtonClicked = true;
     });
@@ -113,5 +113,9 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
         );
       },
     );
+
+    Get.to(() => EventoOrganizadorPage(
+          evento: widget.evento,
+        ));
   }
 }

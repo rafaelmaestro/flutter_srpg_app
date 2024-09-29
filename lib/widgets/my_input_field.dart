@@ -9,6 +9,7 @@ class MyInputField extends StatelessWidget {
   final String placeholder;
   final int maxLen;
   final Function onChange;
+  final bool inputEnabled;
   final String? Function(String?)? validateFunction;
   const MyInputField({
     super.key,
@@ -21,6 +22,7 @@ class MyInputField extends StatelessWidget {
     this.maxLen = 0,
     this.prefixIcon = const SizedBox.shrink(),
     this.valorInicial = '',
+    this.inputEnabled = true,
   });
 
   @override
@@ -45,6 +47,7 @@ class MyInputField extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextFormField(
+            enabled: inputEnabled,
             maxLines: isPasswordField ? 1 : null,
             maxLength: maxLen == 0 ? null : maxLen,
             initialValue: valorInicial,

@@ -1,8 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_srpg_app/helpers/is_numeric_helper.dart';
+import 'package:flutter_srpg_app/helpers/is_valid_email_helper.dart';
+import 'package:flutter_srpg_app/helpers/is_valid_password_helper.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/repositories/login_repository.dart';
+import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class PerfilPage extends StatefulWidget {
@@ -19,6 +26,12 @@ class _PerfilPageState extends State<PerfilPage> {
   String cpfUsuario = '';
   String emailUsuario = '';
   String dtCriacaoUsuario = '';
+  final DateFormat formatter = DateFormat('dd/MM/yyyy');
+  final _formKey = GlobalKey<FormState>();
+  final _emailFormKey = GlobalKey<FormState>();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController senhaController = TextEditingController();
+  TextEditingController novaSenhaController = TextEditingController();
 
   @override
   void initState() {
@@ -64,7 +77,7 @@ class _PerfilPageState extends State<PerfilPage> {
               backgroundColor: const Color(0xFF0A6D92),
               foregroundColor: Colors.white,
               child: Text(
-                nomeUsuario[0],
+                nomeUsuario.isNotEmpty ? nomeUsuario[0] : 'N',
                 style: const TextStyle(fontSize: 32),
               ),
             ),
@@ -118,12 +131,13 @@ class _PerfilPageState extends State<PerfilPage> {
                       ),
                       const SizedBox(height: 20),
                       Text(
-                        cpfUsuario,
+                        'CPF: $cpfUsuario',
                       ),
                       const SizedBox(height: 20),
-                      const Text('E-mail: email-exemplo@email.com'),
+                      Text('E-mail: $emailUsuario'),
                       const SizedBox(height: 20),
-                      Text(dtCriacaoUsuario), // TODO: Alterar valores
+                      Text(
+                          'Entrou em: ${dtCriacaoUsuario.isNotEmpty ? formatter.format(DateTime.parse(dtCriacaoUsuario)) : 'dd/mm/yyyy'}'),
                       const SizedBox(height: 20),
                       Divider(
                         color: Colors.grey.withOpacity(.3),
@@ -158,7 +172,7 @@ class _PerfilPageState extends State<PerfilPage> {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Adicione a lógica para alterar a foto de biometria
+                          _handleAlterarFotoBiometria();
                         },
                         child: const Text(
                           'Alterar foto de biometria',
@@ -169,14 +183,14 @@ class _PerfilPageState extends State<PerfilPage> {
                       ),
                       TextButton(
                         onPressed: () {
-                          // Adicione a lógica para alterar a foto de biometria
+                          _handleAlterarEmail();
                         },
                         child: const Text('Alterar e-mail',
                             style: TextStyle(color: Color(0xFF0A6D92))),
                       ),
                       TextButton(
                         onPressed: () {
-                          // Adicione a lógica para alterar a senha
+                          _handleAlterarSenha();
                         },
                         child: const Text('Alterar senha',
                             style: TextStyle(color: Color(0xFF0A6D92))),
@@ -196,20 +210,355 @@ class _PerfilPageState extends State<PerfilPage> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String? cpf = prefs.getString('cpf');
 
+      setState(() {
+        cpfUsuario = cpf ?? '123.456.789-00';
+      });
+
       if (cpf != null) {
         final usuario = await LoginRepository().getUser(cpf);
 
         setState(() {
           nomeUsuario = usuario.nome ?? 'No name';
-          cpfUsuario = usuario.cpf ?? '123.456.789-00';
           emailUsuario = usuario.email ?? 'noemail@email.com';
-          dtCriacaoUsuario = usuario.dtCriacao ?? '01/01/2021';
+          dtCriacaoUsuario = usuario.dtCriacao.toString();
         });
       }
     } catch (err) {
       Get.snackbar(
         'Erro ao buscar o usuário! 😢',
         'Erro desconhecido ao buscar usuário, tente novamente mais tarde ou entre em contato com o suporte em 4002-8922',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+    }
+  }
+
+  _handleAlterarEmail() {
+    // Adicione a lógica para alterar o e-mail
+    showDialog(
+      context: Get.context!,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          insetPadding: EdgeInsets.only(left: 20, right: 20),
+          child: Stack(
+            alignment: Alignment.topRight,
+            children: <Widget>[
+              Container(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Text(
+                      'Alterar e-mail 📧',
+                      textAlign: TextAlign.center, // Centraliza o título
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20), // Torna o título em negrito
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Insira o novo e-mail que deseja utilizar para acessar o SRPG.',
+                      textAlign: TextAlign.center, // Centraliza o conteúdo
+                    ),
+                    const SizedBox(height: 20),
+                    Form(
+                      key: _emailFormKey,
+                      child: Column(
+                        children: [
+                          MyInputField(
+                            label: "Novo e-mail",
+                            placeholder: "Insira seu novo e-mail",
+                            onChange: (value) {
+                              emailController.text = value;
+                            },
+                            isEmailOrCpfField: true,
+                            validateFunction: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Por favor, insira o novo e-mail';
+                              }
+
+                              if (isNumeric(value)) {
+                                if (value.length != 11) {
+                                  return 'E-mail inválido';
+                                } else {
+                                  return null;
+                                }
+                              }
+
+                              if (value.contains('@') == true ||
+                                  isNumeric(value) == false) {
+                                if (!isValidEmail(value)) {
+                                  return 'E-mail inválido';
+                                } else {
+                                  return null;
+                                }
+                              }
+
+                              if (value == emailUsuario) {
+                                return 'O novo e-mail não pode ser igual ao e-mail atual';
+                              }
+
+                              return null;
+                            },
+                            prefixIcon: const Icon(Icons.person,
+                                color: Color(0xFF0A6D92)),
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: () {
+                              _alterarEmail();
+                            },
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0A6D92),
+                                minimumSize: const Size(double.infinity, 50),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      bottomLeft: Radius.circular(16),
+                                      bottomRight: Radius.circular(16)),
+                                )),
+                            child: const Text('Alterar e-mail',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                )),
+                          )
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  _handleAlterarSenha() {
+    // Adicione a lógica para alterar a senha
+    showDialog(
+      context: Get.context!,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return Dialog(
+          insetPadding: EdgeInsets.only(left: 20, right: 20),
+          child: Stack(
+            alignment: Alignment.topRight,
+            children: <Widget>[
+              Container(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Text(
+                      'Alterar senha 🔑',
+                      textAlign: TextAlign.center, // Centraliza o título
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20), // Torna o título em negrito
+                    ),
+                    const SizedBox(height: 20),
+                    const Text(
+                      'Insira a sua senha atual e a nova senha que deseja utilizar para acessar o SRPG.',
+                      textAlign: TextAlign.center, // Centraliza o conteúdo
+                    ),
+                    const SizedBox(height: 20),
+                    SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Form(
+                            key: _formKey,
+                            child: Column(
+                              children: [
+                                MyInputField(
+                                  isPasswordField: true,
+                                  label: "Senha atual",
+                                  placeholder: "Insira sua senha atual",
+                                  onChange: (value) {
+                                    senhaController.text = value;
+                                  },
+                                  isEmailOrCpfField: true,
+                                  validateFunction: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Por favor, insira sua senha atual';
+                                    }
+
+                                    return null;
+                                  },
+                                  prefixIcon: const Icon(Icons.password,
+                                      color: Color(0xFF0A6D92)),
+                                ),
+                                const SizedBox(height: 10),
+                                MyInputField(
+                                  isPasswordField: true,
+                                  label: "Nova senha",
+                                  placeholder: "Insira sua nova senha",
+                                  onChange: (value) {
+                                    novaSenhaController.text = value;
+                                  },
+                                  isEmailOrCpfField: true,
+                                  validateFunction: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Por favor, insira sua nova senha';
+                                    }
+
+                                    if (isValidPassword(value) == false) {
+                                      return 'A senha deve conter no mínimo 8 caracteres, uma letra maiúscula, uma letra minúscula, um caractere especial e um número';
+                                    }
+
+                                    if (senhaController.text == value) {
+                                      return 'A nova senha não pode ser igual a senha atual';
+                                    }
+
+                                    return null;
+                                  },
+                                  prefixIcon: const Icon(
+                                      Icons.password_outlined,
+                                      color: Color(0xFF0A6D92)),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          ElevatedButton(
+                            onPressed: () {
+                              _alterarSenha();
+                            },
+                            style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0A6D92),
+                                minimumSize: const Size(double.infinity, 50),
+                                shape: const RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(16),
+                                      bottomLeft: Radius.circular(16),
+                                      bottomRight: Radius.circular(16)),
+                                )),
+                            child: const Text('Alterar senha',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                )),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  _handleAlterarFotoBiometria() {
+    Get.snackbar(
+      'Ainda não podemos alterar a foto de biometria! 😢',
+      'Em breve teremos essa funcionalidade disponível e você será avisado!',
+      backgroundColor: Colors.orange,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 10),
+      showProgressIndicator: true,
+      progressIndicatorBackgroundColor: Colors.orange,
+      progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+        Colors.white,
+      ),
+      isDismissible: true,
+    );
+  }
+
+  _alterarSenha() async {
+    // Adicione a lógica para alterar a senha
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final senhaAntiga = senhaController.text;
+    final novaSenha = novaSenhaController.text;
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await LoginRepository()
+          .updateProfile(emailUsuario, null, novaSenha, senhaAntiga, null);
+      prefs.clear();
+      Get.offAllNamed('/login');
+      Get.snackbar(
+        'Senha alterada com sucesso! 🔒',
+        'Por questões de segurança, você foi deslogado. Faça login novamente com a nova senha.',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.green,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+    } catch (err) {
+      Get.snackbar(
+        'Erro ao alterar a senha! 😢',
+        err.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+    }
+  }
+
+  _alterarEmail() async {
+    // Adicione a lógica para alterar o e-mail
+    if (!_emailFormKey.currentState!.validate()) {
+      return;
+    }
+
+    final emailNovo = emailController.text;
+
+    try {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await LoginRepository()
+          .updateProfile(emailUsuario, emailNovo, null, null, null);
+
+      prefs.clear();
+      Get.offAllNamed('/login');
+
+      Get.snackbar(
+        'E-mail alterado com sucesso! 📧',
+        'Seu e-mail foi alterado com sucesso para $emailNovo.\n\nPor questões de segurança, você foi deslogado.\nPor favor, faça login novamente.',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.green,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+    } catch (err) {
+      Get.snackbar(
+        'Erro ao alterar o e-mail! 😢',
+        err.toString(),
         backgroundColor: Colors.red,
         colorText: Colors.white,
         snackPosition: SnackPosition.TOP,
