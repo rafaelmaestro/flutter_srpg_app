@@ -77,42 +77,6 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
     }
   }
 
-  // Aparentemente não é necessário
-  // _checkNovosRegistros() async {
-  //   try {
-  //     final prefs = await SharedPreferences.getInstance();
-  //     final email = prefs.get('email').toString();
-
-  //     final response = await EventoRepository().getRegistrosCheckIn(
-  //         idEvento: widget.evento.id, emailConvidado: email);
-
-  //     if (response.registros.isNotEmpty) {
-  //       final ultimoRegistro = response.registros.last;
-  //       if (ultimoRegistro.dtHoraCheckOut != null) {
-  //         eventos.add(
-  //             '[${formatter.format(ultimoRegistro.dtHoraCheckOut!)}] - Check-out realizado 🚪');
-  //         Get.off(() => const HomePage());
-  //         Get.snackbar(
-  //           'Check-out realizado! 🚪',
-  //           'Parece que você se desconectou do evento. Seu check-out foi realizado automaticamente. Obrigado por participar! 🎉',
-  //           backgroundColor: Colors.orange,
-  //           colorText: Colors.white,
-  //           snackPosition: SnackPosition.TOP,
-  //           duration: const Duration(seconds: 10),
-  //           showProgressIndicator: true,
-  //           progressIndicatorBackgroundColor: Colors.green,
-  //           progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
-  //             Colors.white,
-  //           ),
-  //           isDismissible: true,
-  //         );
-  //       }
-  //     }
-  //   } catch (err) {
-  //     print('Erro ao buscar novos registros: $err');
-  //   }
-  // }
-
   void startHttpTimer() {
     _httpTimer = Timer.periodic(
       const Duration(minutes: 1),

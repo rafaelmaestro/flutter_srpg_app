@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
-import 'package:flutter_srpg_app/pages/login/home_page.dart';
-import 'package:flutter_srpg_app/services/data_service.dart';
 import 'package:flutter_srpg_app/widgets/evento_checkin_bottomsheet.dart';
 import 'package:flutter_srpg_app/widgets/evento_iniciar_bottomsheet.dart';
 import 'package:get/get.dart';

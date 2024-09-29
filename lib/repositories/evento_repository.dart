@@ -311,16 +311,6 @@ class EventoRepository extends ChangeNotifier {
     }
   }
 
-//   {
-//     "registros": [
-//         {
-//             "id": "01J816DT8VB8BM0EAMGBK2T4BK",
-//             "dt_hora_check_in": "2024-09-17T23:52:31.768Z",
-//             "dt_hora_check_out": null
-//         }
-//     ]
-// }
-
   Future<RealizarCheckInOuCheckOutResponse> realizarCheckIn(
       {required String idEvento, required String emailConvidado}) async {
     try {
@@ -408,6 +398,64 @@ class EventoRepository extends ChangeNotifier {
         throw Exception(responseData['message']);
       }
       return RealizarCheckInOuCheckOutResponse.fromJson(responseData);
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<EventoResponse> iniciarEvento(
+      String idEvento, double latitude, double longitude) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.get('access_token');
+
+      final response = await http.patch(
+        Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/evento/$idEvento'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'status': 'EM_ANDAMENTO',
+          'latitude': latitude,
+          'longitude': longitude,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode != 200) {
+        throw Exception(responseData['message']);
+      }
+      return EventoResponse.fromJson(responseData);
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<EventoResponse> atualizarStatusEvento(
+      String idEvento, String status) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.get('access_token');
+
+      final response = await http.patch(
+        Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/evento/$idEvento'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'status': status,
+        }),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode != 200) {
+        throw Exception(responseData['message']);
+      }
+      return EventoResponse.fromJson(responseData);
     } catch (err) {
       rethrow;
     }
