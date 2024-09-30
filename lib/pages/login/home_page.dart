@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
+import 'package:flutter_srpg_app/models/evento.dart';
+import 'package:flutter_srpg_app/pages/evento/evento_organizador_page.dart';
+import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,6 +18,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final mapKey = GlobalKey();
+
+  @override
+  void initState() {
+    _loadEventos();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -75,5 +86,74 @@ class _HomePageState extends State<HomePage> {
       // floatingActionButton: const CustomFloatingActionButton(),
       bottomNavigationBar: const SRPGNavigationBar(),
     );
+  }
+
+  Future<void> _loadEventos() async {
+    try {
+      final eventos = await EventoRepository()
+          .getEventosConvidadosEOrganizadosPendentesOuEmAndamento();
+
+      final prefs = await SharedPreferences.getInstance();
+      final cpf = prefs.get('cpf').toString();
+
+      for (var element in eventos) {
+        if (element.cpfOrganizador == cpf &&
+            (element.status == 'EM_ANDAMENTO' || element.status == 'PAUSADO')) {
+          final eventoEmAndamento = Evento(
+              id: element.id,
+              nome: element.nome,
+              status: element.status,
+              descricao: element.descricao,
+              dtCriacao: element.dtCriacao,
+              dtInicio: element.dtInicio,
+              latitude: element.latitude,
+              longitude: element.longitude,
+              dtFim: element.dtFim,
+              dtUltAtualizacao: element.dtUltAtualizacao,
+              dtInicioPrevista: element.dtInicioPrevista,
+              dtFimPrevista: element.dtFimPrevista,
+              local: element.local,
+              cpfOrganizador: element.cpfOrganizador,
+              convidados: element.convidados,
+              checkIns: element.checkIns,
+              checkOuts: element.checkOuts);
+
+          Get.to(() => EventoOrganizadorPage(
+                evento: eventoEmAndamento,
+                atualizarStatus: true,
+              ));
+          Get.snackbar(
+            'Parece que você já tem um evento em andamento! ⌛',
+            'Não é possível gerenciar, participar ou iniciar outros eventos enquanto você está com um EM ANDAMENTO.\n\nVocê será redirecionado para a página do evento, se desejar sair do evento, clique em "Encerrar evento" no menu do evento.',
+            backgroundColor: Colors.orange,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+            duration: const Duration(seconds: 10),
+            showProgressIndicator: true,
+            progressIndicatorBackgroundColor: Colors.orange,
+            progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+              Colors.white,
+            ),
+            isDismissible: true,
+          );
+        }
+      }
+    } catch (err) {
+      Get.snackbar(
+        'Falha ao buscar seus eventos! 😢',
+        'Por favor, tente novamente mais tarde.\nCaso o erro persista, entre em contato com o suporte em 📞 4002-8922 e informe o seguinte código: \n\n${err.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+      return;
+    }
   }
 }

@@ -68,12 +68,14 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.detached) {
+      _callCheckout();
+      return;
+    }
     if (state != AppLifecycleState.resumed) {
       _startDistanceCheckTimer();
     } else {
-      print('VOLTEI PARA O APP!');
       _checkDistanceTimer?.cancel();
-      // _checkNovosRegistros();
     }
   }
 
@@ -406,7 +408,6 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
 
   _callCheckout() async {
     try {
-      print('Realizando check-out...');
       final prefs = await SharedPreferences.getInstance();
       final email = prefs.get('email').toString();
 

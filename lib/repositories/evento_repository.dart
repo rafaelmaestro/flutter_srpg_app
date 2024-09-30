@@ -230,7 +230,7 @@ class EventoRepository extends ChangeNotifier {
           limite: '10',
           cpfConvidado: cpf,
           cpfOrganizador: cpf,
-          status: 'PENDENTE, EM_ANDAMENTO',
+          status: 'PENDENTE, EM_ANDAMENTO, PAUSADO',
         ),
       );
 

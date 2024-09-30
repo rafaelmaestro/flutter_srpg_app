@@ -8,10 +8,14 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'dart:ui' as ui;
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 // TODO: tratar cenários onde o usuário feche o app, ao retornar deve voltar para a tela
 class EventoOrganizadorPage extends StatefulWidget {
   final Evento evento;
-  const EventoOrganizadorPage({super.key, required this.evento});
+  bool? atualizarStatus = false;
+  EventoOrganizadorPage(
+      {super.key, required this.evento, this.atualizarStatus});
 
   @override
   _EventoOrganizadorPageState createState() => _EventoOrganizadorPageState();
@@ -84,20 +88,26 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
     startHttpTimer();
     super.initState();
 
-    Get.snackbar(
-      'Check-in realizado com sucesso! 🎉',
-      'Por favor, permaneça no local do evento para que sua presença seja contabilizada! ✅',
-      backgroundColor: Colors.green,
-      colorText: Colors.white,
-      snackPosition: SnackPosition.TOP,
-      duration: const Duration(seconds: 10),
-      showProgressIndicator: true,
-      progressIndicatorBackgroundColor: Colors.green,
-      progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
-        Colors.white,
-      ),
-      isDismissible: true,
-    );
+    if (widget.atualizarStatus!) {
+      _retomarEvento();
+    }
+
+    if (!widget.atualizarStatus!) {
+      Get.snackbar(
+        'Evento iniciado! 🎉',
+        'O evento foi iniciado e os convidados foram notificados. ✅ \n\nTodos devem permanecer no local para que a presença seja contabilizada.',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.green,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+    }
   }
 
   @override
@@ -233,7 +243,7 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
                                 Text(
                                     '📅 Iniciou em: ${formatter.format(widget.evento.dtInicio ?? DateTime.now())}'),
                                 Text(
-                                    '📅 Fim previsto: ${formatter.format(widget.evento.dtFimPrevista ?? DateTime.now())}'),
+                                    '📅 Fim previsto: ${formatter.format(widget.evento.dtFimPrevista)}'),
                                 const SizedBox(height: 10),
                                 Text(
                                     '🧑‍🎓 Convidados: ${widget.evento.convidados.total}'),
@@ -293,7 +303,7 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
                           headerBuilder:
                               (BuildContext context, bool isExpanded) {
                             return const ListTile(
-                              title: Text('Check-ins realizados',
+                              title: Text('Check-ins',
                                   style: TextStyle(fontSize: 16)),
                             );
                           },
@@ -320,9 +330,11 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
                                             color: Colors.red,
                                           ),
                                           onPressed: () {
-                                            // TODO: CHAMAR MÉTODO PARA REALIZAR CHECKOUT DO CONVIDADO
+                                            _callCheckout(emailsCheckIn[index]);
                                             setState(() {
                                               emailsCheckIn.removeAt(index);
+                                              checkOutsRealizados =
+                                                  checkOutsRealizados! + 1;
                                             });
                                           },
                                         ),
@@ -361,7 +373,7 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
                           headerBuilder:
                               (BuildContext context, bool isExpanded) {
                             return const ListTile(
-                              title: Text('Check-outs realizados',
+                              title: Text('Check-outs',
                                   style: TextStyle(fontSize: 16)),
                             );
                           },
@@ -508,7 +520,7 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
                   minimumSize: const ui.Size(double.infinity, 50),
                 ),
                 onPressed: () {
-                  // _callCheckout();
+                  _callEncerrarEvento();
                 },
                 child: const Text('Sim, quero encerrar!'),
               ),
@@ -607,11 +619,31 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
         _handleEventoPausado();
       }
 
+      // Contar ocorrências de emails em check-ins e check-outs
+      final Map<String, int> checkInCounts = {};
+      final Map<String, int> checkOutCounts = {};
+
+      for (var email in response.evento.checkIns.emails) {
+        checkInCounts[email] = (checkInCounts[email] ?? 0) + 1;
+      }
+
+      for (var email in response.evento.checkOuts.emails) {
+        checkOutCounts[email] = (checkOutCounts[email] ?? 0) + 1;
+      }
+
+      // Filtrar os emails que têm mais check-ins do que check-outs
+      final List<String> emailsCheckInRealizados =
+          checkInCounts.keys.where((email) {
+        final checkInCount = checkInCounts[email] ?? 0;
+        final checkOutCount = checkOutCounts[email] ?? 0;
+        return checkInCount > checkOutCount;
+      }).toList();
+
       setState(() {
         statusEventoAtual = response.evento.status;
         checkInsRealizados = response.evento.checkIns.total;
         checkOutsRealizados = response.evento.checkOuts.total;
-        emailsCheckIn = response.evento.checkIns.emails;
+        emailsCheckIn = emailsCheckInRealizados;
         emailsCheckOut = response.evento.checkOuts.emails;
         dtFimEvento = response.evento.dtFim;
       });
@@ -623,6 +655,43 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
       if (_httpErrorCount >= MAX_HTTP_ERROR_COUNT) {
         _handleErroConexao();
       }
+    }
+  }
+
+  _callCheckout(String email) async {
+    try {
+      await EventoRepository()
+          .realizarCheckOut(idEvento: widget.evento.id, emailConvidado: email);
+
+      Get.snackbar(
+        'Check-out realizado! 🚪',
+        'O check-out do convidado $email foi realizado com sucesso. ✅\n\nNós o avisaremos que ele pode ir embora.',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.green,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+    } catch (err) {
+      Get.snackbar(
+        'Erro ao realizar check-out! 😢',
+        'Por favor, tente novamente mais tarde.\nCaso o erro persista, entre em contato com o suporte em 📞 4002-8922 e informe o seguinte código: \n\n${err.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
     }
   }
 
@@ -700,5 +769,33 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
     setState(() {
       statusEventoAtual = 'EM_ANDAMENTO';
     });
+  }
+
+  _callEncerrarEvento() async {
+    print('Encerrando evento...');
+    try {
+      final response = await EventoRepository()
+          .atualizarStatusEvento(widget.evento.id, 'FINALIZADO');
+
+      if (response.evento.status == 'FINALIZADO') {
+        // TODO: Voltar para a home
+        // TODO: Exibir mensagem de sucesso
+      }
+    } catch (err) {
+      Get.snackbar(
+        'Erro ao encerrar o evento! 😢',
+        err.toString(),
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+    }
   }
 }
