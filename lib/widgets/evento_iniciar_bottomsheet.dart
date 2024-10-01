@@ -157,6 +157,7 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
 
       Get.to(() => EventoOrganizadorPage(
             evento: eventoAtualizado,
+            atualizarStatus: false,
           ));
     } catch (err) {
       Get.snackbar(

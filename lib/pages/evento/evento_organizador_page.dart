@@ -3,6 +3,7 @@ import 'dart:ffi';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/constants/constants.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
+import 'package:flutter_srpg_app/pages/login/home_page.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -33,7 +34,6 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
   int? checkOutsRealizados;
   List<String> emailsCheckIn = [];
   List<String> emailsCheckOut = [];
-  DateTime? dtFimEvento;
   int _httpErrorCount = 0;
   bool _isExpanded = true;
   // Crie uma lista para controlar a expansão de cada painel, caso tenha mais de um
@@ -76,19 +76,26 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
 
   @override
   void initState() {
+    final emailsCheckInRealizados = _getEmailsCheckInRealizados(
+        widget.evento.checkIns.emails, widget.evento.checkOuts.emails);
     setState(() {
+      print('-------- set State ----------------');
+      print(widget.evento.status);
+      print(widget.evento.checkIns.total);
+      print(widget.evento.checkOuts.total);
+      print(emailsCheckInRealizados);
+      print(widget.evento.checkOuts.emails);
       statusEventoAtual = widget.evento.status;
       checkInsRealizados = widget.evento.checkIns.total;
       checkOutsRealizados = widget.evento.checkOuts.total;
-      emailsCheckIn = widget.evento.checkIns.emails;
+      emailsCheckIn = emailsCheckInRealizados;
       emailsCheckOut = widget.evento.checkOuts.emails;
-      dtFimEvento = widget.evento.dtFim;
     });
     startTimer();
     startHttpTimer();
     super.initState();
 
-    if (widget.atualizarStatus!) {
+    if (widget.atualizarStatus! && statusEventoAtual != 'EM_ANDAMENTO') {
       _retomarEvento();
     }
 
@@ -619,25 +626,8 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
         _handleEventoPausado();
       }
 
-      // Contar ocorrências de emails em check-ins e check-outs
-      final Map<String, int> checkInCounts = {};
-      final Map<String, int> checkOutCounts = {};
-
-      for (var email in response.evento.checkIns.emails) {
-        checkInCounts[email] = (checkInCounts[email] ?? 0) + 1;
-      }
-
-      for (var email in response.evento.checkOuts.emails) {
-        checkOutCounts[email] = (checkOutCounts[email] ?? 0) + 1;
-      }
-
-      // Filtrar os emails que têm mais check-ins do que check-outs
-      final List<String> emailsCheckInRealizados =
-          checkInCounts.keys.where((email) {
-        final checkInCount = checkInCounts[email] ?? 0;
-        final checkOutCount = checkOutCounts[email] ?? 0;
-        return checkInCount > checkOutCount;
-      }).toList();
+      final emailsCheckInRealizados = _getEmailsCheckInRealizados(
+          response.evento.checkIns.emails, response.evento.checkOuts.emails);
 
       setState(() {
         statusEventoAtual = response.evento.status;
@@ -645,7 +635,6 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
         checkOutsRealizados = response.evento.checkOuts.total;
         emailsCheckIn = emailsCheckInRealizados;
         emailsCheckOut = response.evento.checkOuts.emails;
-        dtFimEvento = response.evento.dtFim;
       });
     } catch (err) {
       setState(() {
@@ -656,6 +645,25 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
         _handleErroConexao();
       }
     }
+  }
+
+  List<String> _getEmailsCheckInRealizados(emailsCheckIn, emailsCheckOut) {
+    final Map<String, int> checkInCounts = {};
+    final Map<String, int> checkOutCounts = {};
+
+    for (var email in emailsCheckIn) {
+      checkInCounts[email] = (checkInCounts[email] ?? 0) + 1;
+    }
+
+    for (var email in emailsCheckOut) {
+      checkOutCounts[email] = (checkOutCounts[email] ?? 0) + 1;
+    }
+
+    return checkInCounts.keys.where((email) {
+      final checkInCount = checkInCounts[email] ?? 0;
+      final checkOutCount = checkOutCounts[email] ?? 0;
+      return checkInCount > checkOutCount;
+    }).toList();
   }
 
   _callCheckout(String email) async {
@@ -713,6 +721,8 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
   }
 
   _handleEventoFinalizado() {
+    Get.off(() =>
+        const HomePage()); // Isso remove a página atual e navega para a HomePage
     Get.snackbar(
       'O evento foi finalizado! 🏁',
       'O organizador já encerrou o evento e todos os convidados foram notificados. Obrigado por participar! 🎉',
@@ -778,8 +788,7 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
           .atualizarStatusEvento(widget.evento.id, 'FINALIZADO');
 
       if (response.evento.status == 'FINALIZADO') {
-        // TODO: Voltar para a home
-        // TODO: Exibir mensagem de sucesso
+        _handleEventoFinalizado();
       }
     } catch (err) {
       Get.snackbar(
