@@ -218,8 +218,9 @@ class EventoRepository extends ChangeNotifier {
     }
   }
 
-  Future<List<Evento>>
-      getEventosConvidadosEOrganizadosPendentesOuEmAndamento() async {
+//TODO: refatorar para realizar paginação de verdade
+  Future<List<Evento>> getEventosConvidadosEOrganizadosPendentesOuEmAndamento(
+      String limite) async {
     final prefs = await SharedPreferences.getInstance();
     final cpf = prefs.get('cpf').toString();
 
@@ -227,10 +228,34 @@ class EventoRepository extends ChangeNotifier {
       final response = await fetchEventos(
         eventosQueryParams: EventosQueryParams(
           pagina: '1',
-          limite: '10',
+          limite: limite,
           cpfConvidado: cpf,
           cpfOrganizador: cpf,
           status: 'PENDENTE, EM_ANDAMENTO, PAUSADO',
+        ),
+      );
+
+      if (response.code != 200) {
+        throw Exception(response.error);
+      }
+      return response.eventos ?? [];
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<List<Evento>> getEventosFinalizados(String limite) async {
+    final prefs = await SharedPreferences.getInstance();
+    final cpf = prefs.get('cpf').toString();
+
+    try {
+      final response = await fetchEventos(
+        eventosQueryParams: EventosQueryParams(
+          pagina: '1',
+          limite: limite,
+          cpfConvidado: null,
+          cpfOrganizador: cpf,
+          status: 'FINALIZADO',
         ),
       );
 

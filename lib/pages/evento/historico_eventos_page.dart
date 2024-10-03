@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/evento_card.dart';
+import 'package:flutter_srpg_app/widgets/evento_finalizado_card.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// TODO: implementar paginação vinda do backend
+// TODO: implementar search bar realizando busca no backend
 class HistoricoEventosPage extends StatefulWidget {
   HistoricoEventosPage({super.key});
   List<Evento> eventosOrganizados = [];
@@ -15,15 +19,19 @@ class HistoricoEventosPage extends StatefulWidget {
 }
 
 class _HistoricoEventosPageState extends State<HistoricoEventosPage> {
+  late Future<void> _futureMeusEventos;
   String searchQuery = '';
   bool isOrganizadosChecked = true;
-  bool isConvidadosChecked = true;
   bool isFiltered = false;
+  int paginaAtual = 1;
+  List<Widget> elementosExibidos = [];
+  String limiteEventosPagina = '10';
 
   @override
   void initState() {
     super.initState();
-    _loadMeusEventos();
+    _futureMeusEventos = _loadMeusEventos();
+    elementosExibidos = _handleElementosExibidos(searchQuery);
   }
 
   @override
@@ -31,26 +39,50 @@ class _HistoricoEventosPageState extends State<HistoricoEventosPage> {
     super.dispose();
   }
 
-  void _loadMeusEventos() async {
-    final prefs = await SharedPreferences.getInstance();
-    final cpf = prefs.get('cpf').toString();
+  Future<void> _loadMeusEventos() async {
+    try {
+      final eventos =
+          await EventoRepository().getEventosFinalizados(limiteEventosPagina);
 
-    final eventos = await EventoRepository()
-        .getEventosConvidadosEOrganizadosPendentesOuEmAndamento();
+      final prefs = await SharedPreferences.getInstance();
+      final cpf = prefs.get('cpf').toString();
 
-    for (var element in eventos) {
-      if (element.cpfOrganizador == cpf) {
-        widget.eventosOrganizados.add(element);
-      } else {
-        widget.eventosConvidado.add(element);
-      }
+      setState(() {
+        widget.eventosOrganizados.clear();
+        widget.eventosConvidado.clear();
+
+        for (var element in eventos) {
+          if (element.cpfOrganizador == cpf) {
+            widget.eventosOrganizados.add(element);
+          } else {
+            widget.eventosConvidado.add(element);
+          }
+        }
+
+        limiteEventosPagina = widget.eventosOrganizados.length.toString() +
+            widget.eventosConvidado.length.toString();
+
+        elementosExibidos.clear();
+        elementosExibidos = _handleElementosExibidos(searchQuery);
+      });
+    } catch (err) {
+      Get.snackbar(
+        'Falha ao buscar seus eventos! 😢',
+        'Por favor, tente novamente mais tarde.\nCaso o erro persista, entre em contato com o suporte em 📞 4002-8922 e informe o seguinte código: \n\n${err.toString()}',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+      return;
     }
   }
-
-  // nome do evento
-  // descrição do evento
-  // data e hora do evento
-  // endereco do evento (cep, cidade, estado, rua, numero, complemento?)
 
   @override
   Widget build(BuildContext context) {
@@ -76,137 +108,170 @@ class _HistoricoEventosPageState extends State<HistoricoEventosPage> {
           bottom: Radius.circular(32),
         )),
       ),
-      body: Column(
-        children: [
-          const SizedBox(height: 20),
-          Container(
-            margin: const EdgeInsets.only(left: 25, right: 25),
-            padding:
-                const EdgeInsets.only(top: 20, left: 20, right: 20, bottom: 10),
-            decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(16),
-                    bottomLeft: Radius.circular(16),
-                    bottomRight: Radius.circular(16)),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 32,
-                    color: Colors.grey.withOpacity(.1),
-                  )
-                ]),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+      body: FutureBuilder<void>(
+        future: _futureMeusEventos,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          } else {
+            return RefreshIndicator(
+                onRefresh: _loadMeusEventos,
+                color: const Color(0xFF0A6D92),
+                child: Column(
                   children: [
+                    const SizedBox(height: 20),
+                    Container(
+                      margin: const EdgeInsets.only(left: 25, right: 25),
+                      padding: const EdgeInsets.only(
+                          top: 20, left: 20, right: 20, bottom: 10),
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(16),
+                              bottomLeft: Radius.circular(16),
+                              bottomRight: Radius.circular(16)),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 32,
+                              color: Colors.grey.withOpacity(.1),
+                            )
+                          ]),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  onChanged: (value) {
+                                    setState(() {
+                                      searchQuery = value;
+                                      elementosExibidos.clear();
+                                      elementosExibidos =
+                                          _handleElementosExibidos(searchQuery);
+                                    });
+                                  },
+                                  decoration: const InputDecoration(
+                                      labelStyle:
+                                          TextStyle(color: Color(0xFF0A6D92)),
+                                      labelText: "Pesquisar",
+                                      hintText:
+                                          "Digite aqui o nome do evento...",
+                                      prefixIcon: Icon(
+                                        Icons.search,
+                                        color: Color(0xFF0A6D92),
+                                      ),
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.all(0)),
+                                ),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.filter_alt,
+                                  color: Color(0xFF0A6D92),
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    isFiltered = true;
+                                  });
+                                },
+                              ),
+                              _showCloseFilterIcon(),
+                            ],
+                          ),
+                          ..._handleIsFiltered(),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
                     Expanded(
-                      child: TextField(
-                        onChanged: (value) {
-                          setState(() {
-                            searchQuery = value;
-                          });
-                        },
-                        decoration: const InputDecoration(
-                            labelStyle: TextStyle(color: Color(0xFF0A6D92)),
-                            labelText: "Pesquisar",
-                            hintText: "Digite aqui o nome do evento...",
-                            prefixIcon: Icon(
-                              Icons.search,
-                              color: Color(0xFF0A6D92),
-                            ),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.all(0)),
+                      child: SafeArea(
+                        top: false,
+                        child: Scrollbar(
+                          thickness:
+                              8.0, // Define a espessura da barra de rolagem
+                          radius: const Radius.circular(
+                              10.0), // Define o raio da borda da barra de rolagem
+                          scrollbarOrientation: ScrollbarOrientation
+                              .right, // Define a orientação da barra de rolagem
+                          child: SingleChildScrollView(
+                              physics: const BouncingScrollPhysics(),
+                              child: Column(
+                                children: [
+                                  ...elementosExibidos,
+                                ],
+                              )),
+                        ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(
-                        Icons.filter_alt,
-                        color: Color(0xFF0A6D92),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          isFiltered = true;
-                        });
-                      },
-                    ),
-                    _showCloseFilterIcon(),
                   ],
-                ),
-                ..._handleIsFiltered(),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: SafeArea(
-              top: false,
-              child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
-                  child: Column(
-                    children: [
-                      ..._handleElementosExibidos(),
-                    ],
-                  )),
-            ),
-          ),
-        ],
+                ));
+          }
+        },
       ),
       bottomNavigationBar: const SRPGNavigationBar(),
     );
   }
 
-  _handleElementosExibidos() {
-    List<Widget> elementosExibidos = [];
-
+  _handleElementosExibidos(String? searchQuery) {
     if (widget.eventosOrganizados.isEmpty && widget.eventosConvidado.isEmpty) {
-      return elementosExibidos.add(
+      elementosExibidos.add(const SizedBox(height: 20));
+      elementosExibidos.add(
         const Center(
-          child: Text(
-            'Parece que você ainda não criou ou foi convidado para nenhum evento.',
-            style: TextStyle(fontSize: 16),
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              'Tudo tranquilo por aqui! 😎 \n\n Você ainda não finalizou nenhum evento.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+            ),
           ),
         ),
       );
+      elementosExibidos.add(const SizedBox(height: 500));
+
+      return elementosExibidos;
+    }
+
+    List<Evento> eventosOrganizados = List.from(widget.eventosOrganizados);
+    List<Evento> eventosConvidado = List.from(widget.eventosConvidado);
+    List<Evento> todosEventos = [];
+
+    if (searchQuery != null && searchQuery.isNotEmpty) {
+      eventosOrganizados = eventosOrganizados
+          .where((evento) =>
+              evento.nome.toLowerCase().contains(searchQuery.toLowerCase()))
+          .toList();
+      eventosConvidado = eventosConvidado
+          .where((evento) =>
+              evento.nome.toLowerCase().contains(searchQuery.toLowerCase()))
+          .toList();
     }
 
     if (isFiltered) {
-      if (isOrganizadosChecked && isConvidadosChecked) {
-        elementosExibidos.addAll(
-          widget.eventosOrganizados.map((evento) {
-            return EventoCard(evento: evento, isOrganizador: true);
-          }).toList(),
-        );
-        elementosExibidos.addAll(
-          widget.eventosConvidado.map((evento) {
-            return EventoCard(evento: evento, isOrganizador: false);
-          }).toList(),
-        );
-      } else if (isOrganizadosChecked) {
-        elementosExibidos.addAll(
-          widget.eventosOrganizados.map((evento) {
-            return EventoCard(evento: evento, isOrganizador: true);
-          }).toList(),
-        );
-      } else if (isConvidadosChecked) {
-        elementosExibidos.addAll(
-          widget.eventosConvidado.map((evento) {
-            return EventoCard(evento: evento, isOrganizador: false);
-          }).toList(),
-        );
+      if (isOrganizadosChecked) {
+        todosEventos = [...eventosOrganizados, ...eventosConvidado];
       }
     } else {
-      elementosExibidos.addAll(
-        widget.eventosOrganizados.map((evento) {
-          return EventoCard(evento: evento, isOrganizador: true);
-        }).toList(),
-      );
-      elementosExibidos.addAll(
-        widget.eventosConvidado.map((evento) {
-          return EventoCard(evento: evento, isOrganizador: false);
-        }).toList(),
-      );
+      todosEventos = [...eventosOrganizados, ...eventosConvidado];
     }
+
+    todosEventos =
+        todosEventos.where((evento) => evento.status == 'FINALIZADO').toList();
+
+    elementosExibidos.addAll(
+      todosEventos.map((evento) {
+        return EventoFinalizadoCard(
+            evento: evento, isOrganizador: eventosOrganizados.contains(evento));
+      }).toList(),
+    );
+
+    elementosExibidos.add(const SizedBox(height: 500));
 
     return elementosExibidos;
   }
@@ -242,25 +307,13 @@ class _HistoricoEventosPageState extends State<HistoricoEventosPage> {
             onChanged: (newValue) {
               setState(() {
                 isOrganizadosChecked = newValue ?? false;
+                elementosExibidos.clear();
+                elementosExibidos = _handleElementosExibidos(searchQuery);
               });
             },
             controlAffinity: ListTileControlAffinity.leading,
             activeColor: const Color(0xFF0A6D92),
           ),
-        ),
-        CheckboxListTile(
-          title: const Text(
-            "Convidados",
-            style: TextStyle(fontSize: 16),
-          ),
-          value: isConvidadosChecked,
-          onChanged: (newValue) {
-            setState(() {
-              isConvidadosChecked = newValue ?? false;
-            });
-          },
-          controlAffinity: ListTileControlAffinity.leading,
-          activeColor: const Color(0xFF0A6D92),
         )
       ];
     } else {

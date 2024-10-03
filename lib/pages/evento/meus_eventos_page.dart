@@ -22,6 +22,7 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
   String searchQuery = '';
   bool isOrganizadosChecked = true;
   bool isConvidadosChecked = true;
+  String limiteEventosPagina = '10';
   bool isFiltered = false;
   List<Widget> elementosExibidos = [];
 
@@ -40,7 +41,8 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
   Future<void> _loadMeusEventos() async {
     try {
       final eventos = await EventoRepository()
-          .getEventosConvidadosEOrganizadosPendentesOuEmAndamento();
+          .getEventosConvidadosEOrganizadosPendentesOuEmAndamento(
+              limiteEventosPagina);
 
       final prefs = await SharedPreferences.getInstance();
       final cpf = prefs.get('cpf').toString();
@@ -56,6 +58,9 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
             widget.eventosConvidado.add(element);
           }
         }
+
+        limiteEventosPagina = widget.eventosOrganizados.length.toString() +
+            widget.eventosConvidado.length.toString();
 
         elementosExibidos.clear();
         elementosExibidos = _handleElementosExibidos(searchQuery);

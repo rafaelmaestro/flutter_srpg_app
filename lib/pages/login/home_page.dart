@@ -18,6 +18,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final mapKey = GlobalKey();
+  String limiteEventosPagina = '99';
 
   @override
   void initState() {
@@ -91,7 +92,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> _loadEventos() async {
     try {
       final eventos = await EventoRepository()
-          .getEventosConvidadosEOrganizadosPendentesOuEmAndamento();
+          .getEventosConvidadosEOrganizadosPendentesOuEmAndamento(
+              limiteEventosPagina);
 
       final prefs = await SharedPreferences.getInstance();
       final cpf = prefs.get('cpf').toString();
