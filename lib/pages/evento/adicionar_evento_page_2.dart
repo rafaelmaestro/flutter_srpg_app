@@ -232,7 +232,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
   _callProsseguir(int distanciaMaxima, int minutosTolerancia) {
     Evento eventoASerCriado = Evento(
       nome: widget.eventoASerCriado.nome,
-      descricao: minutosToleranciaController.text,
+      descricao: widget.eventoASerCriado.descricao,
       checkOuts: CheckOuts(total: 0, emails: []),
       convidados: Convidados(total: 0, emails: []),
       dtInicio: DateTime.now(),

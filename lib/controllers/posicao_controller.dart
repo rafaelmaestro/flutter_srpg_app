@@ -166,7 +166,7 @@ class PosicaoController extends ChangeNotifier {
     // Configurar o fluxo de posição
     Geolocator.getPositionStream(
       locationSettings: const LocationSettings(
-        accuracy: LocationAccuracy.high,
+        accuracy: LocationAccuracy.best,
         distanceFilter: 10, // Atualiza a cada 10 metros
       ),
     ).listen((Position position) {

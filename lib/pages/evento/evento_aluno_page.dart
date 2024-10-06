@@ -106,7 +106,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
       eventLong,
     );
 
-    if (distanceInMeters > widget.evento.distanciaMaximaPermitida! &&
+    if (distanceInMeters > (widget.evento.distanciaMaximaPermitida ?? 10) &&
         statusEventoAtual == 'EM_ANDAMENTO' &&
         !_isModalVisible) {
       setState(() {
@@ -115,7 +115,8 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
       Future.delayed(Duration.zero, () {
         _showDistanceWarningModal();
       });
-    } else if (distanceInMeters <= widget.evento.distanciaMaximaPermitida! &&
+    } else if (distanceInMeters <=
+            (widget.evento.distanciaMaximaPermitida ?? 10) &&
         _isModalVisible) {
       Get.back();
       setState(() {
@@ -188,6 +189,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
     _checkDistanceTimer?.cancel();
     countdownNotifier.dispose();
     WidgetsBinding.instance!.removeObserver(this);
+    _callCheckout();
     super.dispose();
   }
 
@@ -235,7 +237,8 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
                 ? '${(distanceInMeters / 1000).toStringAsFixed(2)}km'
                 : '${distanceInMeters.toStringAsFixed(0)}m';
 
-            if (distanceInMeters > widget.evento.distanciaMaximaPermitida! &&
+            if (distanceInMeters >
+                    (widget.evento.distanciaMaximaPermitida ?? 10) &&
                 statusEventoAtual == 'EM_ANDAMENTO' &&
                 !_isModalVisible) {
               _isModalVisible = true;
@@ -243,7 +246,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
                 _showDistanceWarningModal();
               });
             } else if (distanceInMeters <=
-                    widget.evento.distanciaMaximaPermitida! &&
+                    (widget.evento.distanciaMaximaPermitida ?? 10) &&
                 _isModalVisible) {
               Get.back();
               _isModalVisible = false;
@@ -297,7 +300,9 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
                             style: TextStyle(
                               fontSize: 16,
                               color: distanceInMeters <=
-                                      (widget.evento.distanciaMaximaPermitida! /
+                                      ((widget.evento
+                                                  .distanciaMaximaPermitida ??
+                                              10) /
                                           2)
                                   ? Colors.green
                                   : distanceInMeters >=
