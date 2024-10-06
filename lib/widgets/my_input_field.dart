@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 
 class MyInputField extends StatelessWidget {
   final bool isEmailOrCpfField;
@@ -10,6 +11,7 @@ class MyInputField extends StatelessWidget {
   final int maxLen;
   final Function onChange;
   final bool inputEnabled;
+  final TextInputType inputType;
   final String? Function(String?)? validateFunction;
   const MyInputField({
     super.key,
@@ -23,6 +25,7 @@ class MyInputField extends StatelessWidget {
     this.prefixIcon = const SizedBox.shrink(),
     this.valorInicial = '',
     this.inputEnabled = true,
+    this.inputType = TextInputType.text,
   });
 
   @override
@@ -52,6 +55,7 @@ class MyInputField extends StatelessWidget {
             maxLength: maxLen == 0 ? null : maxLen,
             initialValue: valorInicial,
             obscureText: isPasswordField,
+            keyboardType: inputType,
             onChanged: ((value) => onChange(value)),
             validator: validateFunction,
             decoration: InputDecoration(

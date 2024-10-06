@@ -89,7 +89,6 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
   void _startDistanceCheckTimer() {
     _checkDistanceTimer?.cancel(); // Cancel any existing timer
     _checkDistanceTimer = Timer.periodic(Duration(seconds: 10), (timer) {
-      print('Verificando distância...');
       _checkDistance();
     });
   }
@@ -107,7 +106,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
       eventLong,
     );
 
-    if (distanceInMeters > MAX_DISTANCE_FROM_EVENT &&
+    if (distanceInMeters > widget.evento.distanciaMaximaPermitida! &&
         statusEventoAtual == 'EM_ANDAMENTO' &&
         !_isModalVisible) {
       setState(() {
@@ -116,7 +115,8 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
       Future.delayed(Duration.zero, () {
         _showDistanceWarningModal();
       });
-    } else if (distanceInMeters <= MAX_DISTANCE_FROM_EVENT && _isModalVisible) {
+    } else if (distanceInMeters <= widget.evento.distanciaMaximaPermitida! &&
+        _isModalVisible) {
       Get.back();
       setState(() {
         _isModalVisible = false;
@@ -235,14 +235,15 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
                 ? '${(distanceInMeters / 1000).toStringAsFixed(2)}km'
                 : '${distanceInMeters.toStringAsFixed(0)}m';
 
-            if (distanceInMeters > MAX_DISTANCE_FROM_EVENT &&
+            if (distanceInMeters > widget.evento.distanciaMaximaPermitida! &&
                 statusEventoAtual == 'EM_ANDAMENTO' &&
                 !_isModalVisible) {
               _isModalVisible = true;
               Future.delayed(Duration.zero, () {
                 _showDistanceWarningModal();
               });
-            } else if (distanceInMeters <= MAX_DISTANCE_FROM_EVENT &&
+            } else if (distanceInMeters <=
+                    widget.evento.distanciaMaximaPermitida! &&
                 _isModalVisible) {
               Get.back();
               _isModalVisible = false;
@@ -296,12 +297,16 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
                             style: TextStyle(
                               fontSize: 16,
                               color: distanceInMeters <=
-                                      (MAX_DISTANCE_FROM_EVENT / 2)
+                                      (widget.evento.distanciaMaximaPermitida! /
+                                          2)
                                   ? Colors.green
                                   : distanceInMeters >=
-                                              (MAX_DISTANCE_FROM_EVENT / 2) &&
+                                              (widget.evento
+                                                      .distanciaMaximaPermitida! /
+                                                  2) &&
                                           distanceInMeters <=
-                                              MAX_DISTANCE_FROM_EVENT
+                                              widget.evento
+                                                  .distanciaMaximaPermitida!
                                       ? Colors.yellow
                                       : Colors.red,
                             ),
@@ -373,7 +378,9 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
             Center(
               child: TextButton(
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.red, // Cor do texto do botão Cancelar
+                  backgroundColor: Colors.red,
+                  foregroundColor:
+                      Colors.white, // Cor do texto do botão Cancelar
                   side: const BorderSide(
                       color: Colors.red, width: 2), // Borda do botão Cancela
                   minimumSize: const Size(double.infinity, 50),
@@ -388,8 +395,9 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
             Center(
               child: TextButton(
                 style: TextButton.styleFrom(
+                  backgroundColor: Colors.green,
                   foregroundColor:
-                      Colors.green, // Cor do texto do botão Cancelar
+                      Colors.white, // Cor do texto do botão Cancelar
                   side: const BorderSide(
                       color: Colors.green, width: 2), // Borda do botão Cancela
                   minimumSize: const Size(double.infinity, 50),
@@ -480,7 +488,6 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
       if (_httpErrorCount >= MAX_HTTP_ERROR_COUNT) {
         _handleErroConexao();
       }
-      print('Erro ao fazer requisição HTTP: $err');
     }
   }
 
@@ -582,19 +589,15 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
 
   void _showDistanceWarningModal() {
     int countdown =
-        MAX_MINUTES_TIME_TOLERANCE_FROM_EVENT * 60; // 10 minutos em segundos
+        widget.evento.minutosTolerancia! * 60; // 10 minutos em segundos
     Timer? countdownTimer;
     bool isModalOpen = false;
     bool hasCheckedOut = false;
-
-    print('LONGE DEMAIS DO EVENTO!');
 
     countdownNotifier.value = countdown;
     countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (countdownNotifier.value > 0) {
         countdownNotifier.value--;
-        print(
-            '${DateTime.now()} Contagem regressiva: ${countdownNotifier.value}');
       } else {
         timer.cancel();
         if (!hasCheckedOut) {

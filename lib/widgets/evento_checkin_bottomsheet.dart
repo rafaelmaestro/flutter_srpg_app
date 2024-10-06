@@ -97,6 +97,11 @@ class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
                 widget.evento.dtInicio ?? DateTime.now(), DateTime.now())),
             Text(DataService().calcularTerminoEventoEmHoras(
                 widget.evento.dtFimPrevista ?? DateTime.now(), DateTime.now())),
+            const SizedBox(height: 10),
+            Text('Você deve ficar a ${widget.evento.distanciaMaximaPermitida}m '
+                'do local para realizar o check-in.'),
+            Text(
+                'Você terá ${widget.evento.minutosTolerancia} minutos de tolerância ao se distanciar.'),
             FutureBuilder<void>(
               future: _futurePosicao,
               builder: (context, snapshot) {

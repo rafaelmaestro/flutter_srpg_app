@@ -9,6 +9,56 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_config/flutter_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class GetEventoFinalizadoPresentes {
+  final List<Presenca> presentes;
+  final List<String> ausentes;
+
+  GetEventoFinalizadoPresentes({
+    required this.presentes,
+    required this.ausentes,
+  });
+
+  factory GetEventoFinalizadoPresentes.fromJson(Map<String, dynamic> json) {
+    return GetEventoFinalizadoPresentes(
+      presentes: List<Presenca>.from(
+        json['presentes'].map((item) => Presenca.fromJson(item)),
+      ),
+      ausentes: List<String>.from(json['ausentes']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'presentes': presentes.map((item) => item.toJson()).toList(),
+      'ausentes': ausentes,
+    };
+  }
+}
+
+class Presenca {
+  final String email;
+  final String permanencia;
+
+  Presenca({
+    required this.email,
+    required this.permanencia,
+  });
+
+  factory Presenca.fromJson(Map<String, dynamic> json) {
+    return Presenca(
+      email: json['email'],
+      permanencia: json['permanencia'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'email': email,
+      'permanencia': permanencia,
+    };
+  }
+}
+
 class Registro {
   final String id;
   final DateTime dtHoraCheckIn;
@@ -46,12 +96,16 @@ class CriarEventoParams {
   final String dtInicioPrevista;
   final String dtFimPrevista;
   final String cpfOrganizador;
+  final int distanciaMaximaPermitida;
+  final int minutosTolerancia;
   List<String> convidados;
 
   CriarEventoParams({
     required this.nome,
     required this.descricao,
     required this.local,
+    required this.distanciaMaximaPermitida,
+    required this.minutosTolerancia,
     required this.dtInicioPrevista,
     required this.dtFimPrevista,
     required this.cpfOrganizador,
@@ -291,6 +345,9 @@ class EventoRepository extends ChangeNotifier {
       body: jsonEncode(<String, dynamic>{
         'nome': criarEventoParams?.nome ?? '',
         'descricao': criarEventoParams?.descricao ?? '',
+        'distancia_maxima_permitida':
+            criarEventoParams?.distanciaMaximaPermitida,
+        'minutos_tolerancia': criarEventoParams?.minutosTolerancia,
         'local': criarEventoParams?.local ?? '',
         'dt_inicio_prevista': criarEventoParams?.dtInicioPrevista ?? '',
         'dt_fim_prevista': criarEventoParams?.dtFimPrevista ?? '',
@@ -337,7 +394,9 @@ class EventoRepository extends ChangeNotifier {
   }
 
   Future<RealizarCheckInOuCheckOutResponse> realizarCheckIn(
-      {required String idEvento, required String emailConvidado}) async {
+      {required String idEvento,
+      required String emailConvidado,
+      double? porcentagemPresenca}) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.get('access_token');
@@ -351,6 +410,7 @@ class EventoRepository extends ChangeNotifier {
         },
         body: jsonEncode(<String, dynamic>{
           'email_convidado': emailConvidado,
+          'porcentagem_presenca': porcentagemPresenca,
         }),
       );
 
@@ -458,6 +518,34 @@ class EventoRepository extends ChangeNotifier {
     }
   }
 
+  Future<GetEventoFinalizadoPresentes> getEventoFinalizadoPresentes(
+      String idEvento) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.get('access_token');
+
+      final uri = Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') +
+          '/evento/$idEvento/presentes');
+
+      final response = await http.get(
+        uri,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode != 200) {
+        throw Exception(responseData['message']);
+      }
+      return GetEventoFinalizadoPresentes.fromJson(responseData);
+    } catch (err) {
+      rethrow;
+    }
+  }
+
   Future<EventoResponse> atualizarStatusEvento(
       String idEvento, String status) async {
     try {
@@ -481,6 +569,32 @@ class EventoRepository extends ChangeNotifier {
         throw Exception(responseData['message']);
       }
       return EventoResponse.fromJson(responseData);
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<void> gerarRelatorio(String idEvento) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.get('access_token');
+
+      final uri = Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') +
+          '/evento/$idEvento/relatorio');
+
+      final response = await http.post(
+        uri,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode != 201) {
+        throw Exception(responseData['message']);
+      }
     } catch (err) {
       rethrow;
     }

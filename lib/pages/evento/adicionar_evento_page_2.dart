@@ -1,9 +1,12 @@
+import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
-import 'package:flutter_srpg_app/repositories/evento_repository.dart';
+import 'package:flutter_srpg_app/pages/evento/adicionar_evento_page_3.dart';
+import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 
 class AdicionarEventoPage2 extends StatefulWidget {
   Evento eventoASerCriado;
@@ -14,13 +17,10 @@ class AdicionarEventoPage2 extends StatefulWidget {
 }
 
 class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
+  var pergunta = 1;
   final _formKey = GlobalKey<FormState>();
-  List<TextEditingController> listController = [];
-  TextEditingController inputEmailController = TextEditingController();
-  double eventoLatitude = 0.0;
-  double eventoLongitude = 0.0;
-
-  Set<Marker> markers = <Marker>{};
+  TextEditingController distanciaMaximaController = TextEditingController();
+  TextEditingController minutosToleranciaController = TextEditingController();
 
   @override
   void initState() {
@@ -30,12 +30,12 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
   @override
   void dispose() {
     super.dispose();
-    for (var element in listController) {
-      element.dispose();
-    }
-
-    inputEmailController.dispose();
   }
+
+  // nome do evento
+  // descrição do evento
+  // data e hora do evento
+  // endereco do evento (cep, cidade, estado, rua, numero, complemento?)
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
         title: const Column(
           children: [
             Text(
-              'Criar Novo Evento',
+              'Criar Novo Evento 2/3',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 22,
@@ -83,116 +83,83 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
                           children: [
                             const Center(
                               child: Text(
-                                'Quem você deseja convidar?',
+                                'Qual a distância máxima EM METROS que os convidados podem estar do evento?',
                                 style: TextStyle(
-                                  fontSize: 22,
-                                  color: Colors.black,
-                                ),
+                                    fontSize: 22, color: Colors.black),
+                                textAlign: TextAlign.center,
                               ),
                             ),
                             const SizedBox(height: 20),
-                            // Container do InputField
-                            Container(
-                              padding: const EdgeInsets.only(
-                                  top: 20, left: 20, right: 20, bottom: 10),
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.grey.withOpacity(.1),
-                                  ),
-                                  color: Colors.white,
-                                  borderRadius: const BorderRadius.only(
-                                      topLeft: Radius.circular(16),
-                                      bottomLeft: Radius.circular(16),
-                                      bottomRight: Radius.circular(16)),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      blurRadius: 32,
-                                      color: Colors.black.withOpacity(.1),
-                                    )
-                                  ]),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  TextFormField(
-                                    validator: (value) {
-                                      if (value!.isEmpty) {
-                                        return 'Digite o e-mail do convidado';
-                                      }
-                                      return null;
-                                    },
-                                    controller: inputEmailController,
-                                    decoration: const InputDecoration(
-                                        prefixIcon: Icon(Icons.person,
-                                            color: Color(0xFF0A6D92)),
-                                        labelText: "Convidado",
-                                        labelStyle:
-                                            TextStyle(color: Color(0xFF0A6D92)),
-                                        hintText:
-                                            "Digite o e-mail do convidado",
-                                        border: InputBorder.none,
-                                        errorStyle: TextStyle(
-                                            color: Colors.red,
-                                            fontWeight: FontWeight.bold),
-                                        contentPadding: EdgeInsets.all(0)),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Fim do Container do InputField
-                            const SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: () {
-                                _handleAdicionar();
+                            MyInputField(
+                              label: "Distância máxima (metros)",
+                              inputType: TextInputType.number,
+                              placeholder:
+                                  "Insira a distância máxima permitida",
+                              onChange: (value) {
+                                distanciaMaximaController.text = value;
                               },
-                              style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF0A6D92),
-                                  minimumSize: const Size(double.infinity, 50),
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        bottomLeft: Radius.circular(16),
-                                        bottomRight: Radius.circular(16)),
-                                  )),
-                              child: const Text('Adicionar',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  )),
-                            ),
-                            const SizedBox(height: 20),
-                            Center(
-                              child: Text(
-                                '${listController.length} convidados:',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                ),
+                              validateFunction: (value) {
+                                // Verifica se o valor é um número válido
+                                final parsedValue = int.tryParse(value!);
+
+                                if (parsedValue == null) {
+                                  return 'Por favor, insira um número válido';
+                                }
+
+                                if (parsedValue < 0) {
+                                  return 'O tempo de tolerância não pode ser negativo';
+                                }
+
+                                if (parsedValue > 60) {
+                                  return 'O tempo de tolerância não pode ser maior que 60 minutos';
+                                }
+
+                                return null;
+                              },
+                              prefixIcon: const Icon(
+                                Icons.social_distance,
+                                color: Color(0xFF0A6D92),
                               ),
                             ),
                             const SizedBox(height: 20),
-                            Column(
-                              children:
-                                  List.generate(listController.length, (index) {
-                                return Card(
-                                  child: ListTile(
-                                    leading: const Icon(
-                                      Icons.person,
-                                      color: Color(0xFF0A6D92),
-                                    ),
-                                    title: Text(listController[index].text),
-                                    trailing: IconButton(
-                                      icon: const Icon(
-                                        Icons.remove_circle,
-                                        color: Colors.red,
-                                      ),
-                                      onPressed: () {
-                                        // Aqui você pode adicionar a lógica para remover o item da lista
-                                        setState(() {
-                                          listController.removeAt(index);
-                                        });
-                                      },
-                                    ),
-                                  ),
-                                );
-                              }),
+                            const Center(
+                              child: Text(
+                                'Qual o tempo de tolerância EM MINUTOS ao se distanciar do evento?',
+                                style: TextStyle(
+                                    fontSize: 22, color: Colors.black),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            MyInputField(
+                              label: "Tempo de tolerância (minutos)",
+                              inputType: TextInputType.number,
+                              placeholder:
+                                  "Insira o tempo de tolerância ao se distanciar do evento",
+                              onChange: (value) {
+                                minutosToleranciaController.text = value;
+                              },
+                              validateFunction: (value) {
+                                final parsedValue = int.tryParse(value!);
+
+                                if (parsedValue == null) {
+                                  return 'Por favor, insira um número válido';
+                                }
+
+                                if (parsedValue <= 0) {
+                                  return 'O tempo de tolerância não pode ser negativo';
+                                }
+
+                                if (parsedValue > 60) {
+                                  return 'O tempo de tolerância não pode ser maior que 60 minutos';
+                                }
+
+                                return null;
+                              },
+                              prefixIcon: const Icon(
+                                Icons.timer,
+                                color: Color(0xFF0A6D92),
+                              ),
                             ),
                             const SizedBox(height: 20),
                             const Row(
@@ -207,12 +174,16 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
                                   Icons.looks_two_outlined,
                                   color: Color(0xFF0A6D92),
                                 ),
+                                Icon(
+                                  Icons.looks_3_outlined,
+                                  color: Colors.grey,
+                                )
                               ],
                             ),
                             const SizedBox(height: 20),
                             ElevatedButton(
                               onPressed: () {
-                                _handleCriarEvento();
+                                _handleProsseguir();
                               },
                               style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF0A6D92),
@@ -243,40 +214,72 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
     );
   }
 
-  _handleAdicionar() {
+  _handleMensagem(bool distanciaMenorQue10, bool minutosMenorQue5) {
+    if (distanciaMenorQue10) {
+      return const Text(
+        'Recomendamos que a distância máxima permitida não seja menor que 10 metros, pois podem haver variações na precisão do GPS.',
+        textAlign: TextAlign.center, // Centraliza o conteúdo
+      );
+    }
+    if (minutosMenorQue5) {
+      return const Text(
+        'Recomendamos que o tempo de tolerância não seja menor que 5 minutos, pois os convidados podem se distanciar do evento por um curto período de tempo devido a variações na precisão do GPS.',
+        textAlign: TextAlign.center, // Centraliza o conteúdo
+      );
+    }
+  }
+
+  _callProsseguir(int distanciaMaxima, int minutosTolerancia) {
+    Evento eventoASerCriado = Evento(
+      nome: widget.eventoASerCriado.nome,
+      descricao: minutosToleranciaController.text,
+      checkOuts: CheckOuts(total: 0, emails: []),
+      convidados: Convidados(total: 0, emails: []),
+      dtInicio: DateTime.now(),
+      dtFim: DateTime.now(),
+      checkIns: CheckIns(total: 0, emails: []),
+      id: '',
+      distanciaMaximaPermitida: distanciaMaxima,
+      minutosTolerancia: minutosTolerancia,
+      dtInicioPrevista: widget.eventoASerCriado.dtInicioPrevista,
+      dtFimPrevista: widget.eventoASerCriado.dtFimPrevista,
+      local: widget.eventoASerCriado.local,
+      cpfOrganizador: '',
+      status: 'PENDENTE',
+    );
+
+    Get.to(() => AdicionarEventoPage3(
+          eventoASerCriado: eventoASerCriado,
+        ));
+  }
+
+  _handleProsseguir() {
     if (!_formKey.currentState!.validate()) {
       return;
     }
 
-    setState(() {
-      listController.insert(
-          0, TextEditingController(text: inputEmailController.text));
-      inputEmailController.clear();
-    });
-  }
+    final distanciaMenorQue10 = int.parse(distanciaMaximaController.text) < 10;
+    final minutosMenorQue5 = int.parse(minutosToleranciaController.text) < 5;
 
-  _handleCriarEvento() async {
-    if (listController.isEmpty) {
-      return showDialog(
+    if (distanciaMenorQue10 || minutosMenorQue5) {
+      showDialog(
         context: Get.context!,
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text(
-              'Ops! Parece que você está planejando o evento mais exclusivo de todos! 😅',
+              'Atenção! 🚨',
               textAlign: TextAlign.center, // Centraliza o título
               style: TextStyle(
                   fontWeight: FontWeight.bold), // Torna o título em negrito
             ),
-            content: const Text(
-              'Vamos lá, adicione pelo menos um convidado. Afinal, até as plantas gostam de companhia! 🌱',
-              textAlign: TextAlign.center, // Centraliza o conteúdo
-            ),
+            content: _handleMensagem(distanciaMenorQue10, minutosMenorQue5),
             actions: <Widget>[
               Center(
                 child: TextButton(
                   style: TextButton.styleFrom(
+                    backgroundColor: Colors.green,
                     foregroundColor:
-                        Colors.green, // Cor do texto do botão Cancelar
+                        Colors.white, // Cor do texto do botão Cancelar
                     side: const BorderSide(
                         color: Colors.green,
                         width: 2), // Borda do botão Cancela
@@ -285,77 +288,34 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
                   onPressed: () {
                     Get.back();
                   },
-                  child: const Text('Ok, vou adicionar alguém!'),
+                  child: const Text('Vou corrigir!'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Center(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor:
+                        Colors.white, // Cor do texto do botão Cancelar
+                    side: const BorderSide(
+                        color: Colors.red, width: 2), // Borda do botão Cancela
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  onPressed: () {
+                    _callProsseguir(int.parse(distanciaMaximaController.text),
+                        int.parse(minutosToleranciaController.text));
+                  },
+                  child: const Text('Entendo, e quero continuar!'),
                 ),
               )
             ],
           );
         },
       );
-    }
-
-    for (var element in listController) {
-      widget.eventoASerCriado.adicionarConvidado(element.text);
-    }
-
-    try {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return const AlertDialog(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            content: Center(
-              child: CircularProgressIndicator(color: Color(0xFF0A6D92)),
-            ),
-          );
-        },
-      );
-      final eventoCriado = await EventoRepository().criarEvento(
-          criarEventoParams: CriarEventoParams(
-        cpfOrganizador: widget.eventoASerCriado.cpfOrganizador,
-        convidados: widget.eventoASerCriado.convidados.emails.toSet().toList(),
-        descricao: widget.eventoASerCriado.descricao,
-        dtFimPrevista: widget.eventoASerCriado.dtFimPrevista.toIso8601String(),
-        dtInicioPrevista:
-            widget.eventoASerCriado.dtInicioPrevista.toIso8601String(),
-        local: widget.eventoASerCriado.local,
-        nome: widget.eventoASerCriado.nome,
-      ));
-
-      Get.snackbar(
-        'Evento criado com sucesso! 🎉',
-        'Agora é só esperar seus convidados no dia combinado! 📍',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 10),
-        showProgressIndicator: true,
-        progressIndicatorBackgroundColor: Colors.green,
-        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
-          Colors.white,
-        ),
-        isDismissible: true,
-      );
-
-      Get.offNamed('/home');
-    } catch (err) {
-      Get.snackbar(
-        'Falha ao criar o evento! 😢',
-        'Por favor, tente novamente mais tarde.\nCaso o erro persista, entre em contato com o suporte em 📞 4002-8922 e informe o seguinte código: \n\n${err.toString()}',
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 10),
-        showProgressIndicator: true,
-        progressIndicatorBackgroundColor: Colors.red,
-        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
-          Colors.white,
-        ),
-        isDismissible: true,
-      );
-      return;
+    } else {
+      _callProsseguir(int.parse(distanciaMaximaController.text),
+          int.parse(minutosToleranciaController.text));
     }
   }
 }

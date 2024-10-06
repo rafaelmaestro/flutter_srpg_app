@@ -39,7 +39,7 @@ class EventoCard extends StatelessWidget {
             subtitle: Text(
                 'Data: ${DateFormat('dd/MM/yyyy HH\'h\'mm').format(evento.dtInicioPrevista ?? DateTime.now())}'),
             leading: CircleAvatar(
-              backgroundColor: const Color(0xFF0A6D92),
+              backgroundColor: _handleCorTexto(evento.status),
               foregroundColor: Colors.white,
               child: Text(evento.nome[0]),
             ),
@@ -206,5 +206,13 @@ class EventoCard extends StatelessWidget {
     }
 
     return tags;
+  }
+
+  _handleCorTexto(String status) {
+    if (status == 'EM_ANDAMENTO') {
+      return Colors.green;
+    } else {
+      return Colors.grey;
+    }
   }
 }

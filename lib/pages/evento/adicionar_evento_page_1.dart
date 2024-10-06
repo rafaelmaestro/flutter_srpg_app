@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/evento/adicionar_evento_page_2.dart';
+import 'package:flutter_srpg_app/pages/evento/adicionar_evento_page_3.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:get/get.dart';
@@ -49,7 +50,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
         title: const Column(
           children: [
             Text(
-              'Criar Novo Evento',
+              'Criar Novo Evento 1/3',
               style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 22,
@@ -428,7 +429,11 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage1> {
                                 Icon(
                                   Icons.looks_two_outlined,
                                   color: Colors.grey,
-                                )
+                                ),
+                                Icon(
+                                  Icons.looks_3_outlined,
+                                  color: Colors.grey,
+                                ),
                               ],
                             ),
                             const SizedBox(height: 20),

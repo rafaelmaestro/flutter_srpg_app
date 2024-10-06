@@ -13,6 +13,8 @@ class Evento {
   final String cpfOrganizador;
   final DateTime? dtCriacao;
   final DateTime? dtUltAtualizacao;
+  final int? distanciaMaximaPermitida;
+  final int? minutosTolerancia;
   final Convidados convidados;
   final CheckIns checkIns;
   final CheckOuts checkOuts;
@@ -32,6 +34,8 @@ class Evento {
     required this.cpfOrganizador,
     this.dtCriacao,
     this.dtUltAtualizacao,
+    this.distanciaMaximaPermitida = 20,
+    this.minutosTolerancia = 10,
     required this.convidados,
     required this.checkIns,
     required this.checkOuts,
@@ -48,6 +52,8 @@ class Evento {
       nome: json['nome'],
       status: json['status'],
       descricao: json['descricao'],
+      distanciaMaximaPermitida: json['distancia_maxima_permitida'],
+      minutosTolerancia: json['minutos_tolerancia'],
       dtInicioPrevista: DateTime.parse(json['dt_inicio_prevista']),
       dtFimPrevista: DateTime.parse(json['dt_fim_prevista']),
       dtInicio:

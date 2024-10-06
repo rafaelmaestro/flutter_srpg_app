@@ -240,10 +240,6 @@ class LoginRepository {
       usuarioParaAtualizar['email_novo'] = emailNovo;
     }
 
-    print('--------------------User para atualziar --------------');
-    print(jsonEncode(usuarioParaAtualizar));
-    print('-------------------------------------');
-
     try {
       final response = await http.patch(
         Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/usuario'),
@@ -255,10 +251,6 @@ class LoginRepository {
       );
 
       final responseData = jsonDecode(response.body);
-
-      print('-------------------------------------');
-      print(responseData);
-      print('-------------------------------------');
 
       if (response.statusCode != 200) {
         throw Exception(responseData['message']);

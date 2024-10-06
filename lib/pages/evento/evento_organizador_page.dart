@@ -79,12 +79,6 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
     final emailsCheckInRealizados = _getEmailsCheckInRealizados(
         widget.evento.checkIns.emails, widget.evento.checkOuts.emails);
     setState(() {
-      print('-------- set State ----------------');
-      print(widget.evento.status);
-      print(widget.evento.checkIns.total);
-      print(widget.evento.checkOuts.total);
-      print(emailsCheckInRealizados);
-      print(widget.evento.checkOuts.emails);
       statusEventoAtual = widget.evento.status;
       checkInsRealizados = widget.evento.checkIns.total;
       checkOutsRealizados = widget.evento.checkOuts.total;
@@ -246,6 +240,11 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
                                 ),
                                 const SizedBox(height: 10),
                                 Text('📍 ${widget.evento.local}'),
+                                const SizedBox(height: 10),
+                                Text(
+                                    '⚙️ Distância máxima permitida: ${widget.evento.distanciaMaximaPermitida}m'),
+                                Text(
+                                    '⚙️ Tempo tolerância: ${widget.evento.minutosTolerancia} minutos'),
                                 const SizedBox(height: 10),
                                 Text(
                                     '📅 Iniciou em: ${formatter.format(widget.evento.dtInicio ?? DateTime.now())}'),
@@ -486,7 +485,6 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
         onPressed: () {
           // Sua lógica aqui
           _retomarEvento();
-          print('Retomar evento');
         },
         icon: const Icon(Icons.play_arrow, color: Colors.white),
         label: const Text('Retomar evento',
@@ -519,9 +517,9 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
             Center(
               child: TextButton(
                 style: TextButton.styleFrom(
-                  backgroundColor: Colors.green.withOpacity(.1),
+                  backgroundColor: Colors.green,
                   foregroundColor:
-                      Colors.green, // Cor do texto do botão Cancelar
+                      Colors.white, // Cor do texto do botão Cancelar
                   side: const BorderSide(
                       color: Colors.green, width: 2), // Borda do botão Cancela
                   minimumSize: const ui.Size(double.infinity, 50),
@@ -536,8 +534,9 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
             Center(
               child: TextButton(
                 style: TextButton.styleFrom(
-                  foregroundColor: Colors.red, // Cor do texto do botão Cancelar
-                  backgroundColor: Colors.red.withOpacity(.1),
+                  foregroundColor:
+                      Colors.white, // Cor do texto do botão Cancelar
+                  backgroundColor: Colors.red,
                   side: const BorderSide(
                       color: Colors.red, width: 2), // Borda do botão Cancela
                   minimumSize: const ui.Size(double.infinity, 50),
@@ -782,7 +781,6 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
   }
 
   _callEncerrarEvento() async {
-    print('Encerrando evento...');
     try {
       final response = await EventoRepository()
           .atualizarStatusEvento(widget.evento.id, 'FINALIZADO');

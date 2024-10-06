@@ -39,11 +39,6 @@ void main() async {
         await FlutterBackground.enableBackgroundExecution();
   }
 
-  print('---------------------------------------------------');
-  print('Permissões: $hasPermissions');
-  print('Execução em segundo plano: $enabledBackgroundExecution');
-  print('---------------------------------------------------');
-
   runApp(const MyApp());
 }
 
