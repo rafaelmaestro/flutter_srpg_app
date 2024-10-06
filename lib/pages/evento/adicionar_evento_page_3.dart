@@ -25,6 +25,12 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage3> {
   @override
   void initState() {
     super.initState();
+
+    if (widget.eventoASerCriado.convidados.emails.isNotEmpty) {
+      for (var email in widget.eventoASerCriado.convidados.emails) {
+        listController.insert(0, TextEditingController(text: email));
+      }
+    }
   }
 
   @override

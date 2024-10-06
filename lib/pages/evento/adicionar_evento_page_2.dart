@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/evento/adicionar_evento_page_3.dart';
+import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:get/get.dart';
@@ -229,31 +230,180 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
     }
   }
 
-  _callProsseguir(int distanciaMaxima, int minutosTolerancia) {
-    Evento eventoASerCriado = Evento(
-      nome: widget.eventoASerCriado.nome,
-      descricao: widget.eventoASerCriado.descricao,
-      checkOuts: CheckOuts(total: 0, emails: []),
-      convidados: Convidados(total: 0, emails: []),
-      dtInicio: DateTime.now(),
-      dtFim: DateTime.now(),
-      checkIns: CheckIns(total: 0, emails: []),
-      id: '',
-      distanciaMaximaPermitida: distanciaMaxima,
-      minutosTolerancia: minutosTolerancia,
-      dtInicioPrevista: widget.eventoASerCriado.dtInicioPrevista,
-      dtFimPrevista: widget.eventoASerCriado.dtFimPrevista,
-      local: widget.eventoASerCriado.local,
-      cpfOrganizador: '',
-      status: 'PENDENTE',
-    );
+  _callProsseguir(int distanciaMaxima, int minutosTolerancia) async {
+    List<String> listaConvidadosEventoSemelhante = [];
+    try {
+      final responseListaConvidados = await EventoRepository()
+          .getListaConvidadosByEventoName(widget.eventoASerCriado.nome);
 
-    Get.to(() => AdicionarEventoPage3(
-          eventoASerCriado: eventoASerCriado,
-        ));
+      print('------------------');
+      print('Lista de convidados do evento semelhante:');
+      print(responseListaConvidados.convidados.emails);
+      print('------------------');
+
+      if (responseListaConvidados.convidados.emails.isEmpty) {
+        Evento eventoASerCriado = Evento(
+          nome: widget.eventoASerCriado.nome,
+          descricao: widget.eventoASerCriado.descricao,
+          checkOuts: CheckOuts(total: 0, emails: []),
+          convidados: Convidados(total: 0, emails: []),
+          dtInicio: DateTime.now(),
+          dtFim: DateTime.now(),
+          checkIns: CheckIns(total: 0, emails: []),
+          id: '',
+          distanciaMaximaPermitida: distanciaMaxima,
+          minutosTolerancia: minutosTolerancia,
+          dtInicioPrevista: widget.eventoASerCriado.dtInicioPrevista,
+          dtFimPrevista: widget.eventoASerCriado.dtFimPrevista,
+          local: widget.eventoASerCriado.local,
+          cpfOrganizador: '',
+          status: 'PENDENTE',
+        );
+
+        Get.back();
+
+        Get.to(() => AdicionarEventoPage3(
+              eventoASerCriado: widget.eventoASerCriado,
+            ));
+        return;
+      }
+
+      showDialog(
+        context: Get.context!,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text(
+              'Quer uma ajuda? 🤔',
+              textAlign: TextAlign.center, // Centraliza o título
+              style: TextStyle(
+                  fontWeight: FontWeight.bold), // Torna o título em negrito
+            ),
+            content: Text(
+              'Encontramos um evento ("${responseListaConvidados.nome}") com nome semelhante ao atual.\nDeseja utilizar a lista de convidados do evento anterior?\nNão, se preocupe você ainda poderá manipular a lista de convidados a seguir.',
+              textAlign: TextAlign.center, // Centraliza o conteúdo
+            ),
+            actions: <Widget>[
+              Center(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    foregroundColor:
+                        Colors.white, // Cor do texto do botão Cancelar
+                    side: const BorderSide(
+                        color: Colors.green,
+                        width: 2), // Borda do botão Cancela
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  onPressed: () {
+                    listaConvidadosEventoSemelhante
+                        .addAll(responseListaConvidados.convidados.emails);
+
+                    Evento eventoASerCriado = Evento(
+                      nome: widget.eventoASerCriado.nome,
+                      descricao: widget.eventoASerCriado.descricao,
+                      checkOuts: CheckOuts(total: 0, emails: []),
+                      convidados: Convidados(total: 0, emails: []),
+                      dtInicio: DateTime.now(),
+                      dtFim: DateTime.now(),
+                      checkIns: CheckIns(total: 0, emails: []),
+                      id: '',
+                      distanciaMaximaPermitida: distanciaMaxima,
+                      minutosTolerancia: minutosTolerancia,
+                      dtInicioPrevista:
+                          widget.eventoASerCriado.dtInicioPrevista,
+                      dtFimPrevista: widget.eventoASerCriado.dtFimPrevista,
+                      local: widget.eventoASerCriado.local,
+                      cpfOrganizador: '',
+                      status: 'PENDENTE',
+                    );
+
+                    if (listaConvidadosEventoSemelhante.isNotEmpty) {
+                      for (var email in listaConvidadosEventoSemelhante) {
+                        eventoASerCriado.adicionarConvidado(email);
+                      }
+                    }
+
+                    Get.back();
+
+                    Get.to(() => AdicionarEventoPage3(
+                          eventoASerCriado: eventoASerCriado,
+                        ));
+                  },
+                  child: const Text('Sim, por favor!'),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Center(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor:
+                        Colors.white, // Cor do texto do botão Cancelar
+                    side: const BorderSide(
+                        color: Colors.red, width: 2), // Borda do botão Cancela
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  onPressed: () {
+                    Evento eventoASerCriado = Evento(
+                      nome: widget.eventoASerCriado.nome,
+                      descricao: widget.eventoASerCriado.descricao,
+                      checkOuts: CheckOuts(total: 0, emails: []),
+                      convidados: Convidados(total: 0, emails: []),
+                      dtInicio: DateTime.now(),
+                      dtFim: DateTime.now(),
+                      checkIns: CheckIns(total: 0, emails: []),
+                      id: '',
+                      distanciaMaximaPermitida: distanciaMaxima,
+                      minutosTolerancia: minutosTolerancia,
+                      dtInicioPrevista:
+                          widget.eventoASerCriado.dtInicioPrevista,
+                      dtFimPrevista: widget.eventoASerCriado.dtFimPrevista,
+                      local: widget.eventoASerCriado.local,
+                      cpfOrganizador: '',
+                      status: 'PENDENTE',
+                    );
+
+                    Get.back();
+
+                    Get.to(() => AdicionarEventoPage3(
+                          eventoASerCriado: eventoASerCriado,
+                        ));
+                  },
+                  child: const Text('Não, obrigado!'),
+                ),
+              )
+            ],
+          );
+        },
+      );
+    } catch (err) {
+      Evento eventoASerCriado = Evento(
+        nome: widget.eventoASerCriado.nome,
+        descricao: widget.eventoASerCriado.descricao,
+        checkOuts: CheckOuts(total: 0, emails: []),
+        convidados: Convidados(total: 0, emails: []),
+        dtInicio: DateTime.now(),
+        dtFim: DateTime.now(),
+        checkIns: CheckIns(total: 0, emails: []),
+        id: '',
+        distanciaMaximaPermitida: distanciaMaxima,
+        minutosTolerancia: minutosTolerancia,
+        dtInicioPrevista: widget.eventoASerCriado.dtInicioPrevista,
+        dtFimPrevista: widget.eventoASerCriado.dtFimPrevista,
+        local: widget.eventoASerCriado.local,
+        cpfOrganizador: '',
+        status: 'PENDENTE',
+      );
+
+      Get.back();
+
+      Get.to(() => AdicionarEventoPage3(
+            eventoASerCriado: eventoASerCriado,
+          ));
+    }
   }
 
-  _handleProsseguir() {
+  _handleProsseguir() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -302,8 +452,9 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
                         color: Colors.red, width: 2), // Borda do botão Cancela
                     minimumSize: const Size(double.infinity, 50),
                   ),
-                  onPressed: () {
-                    _callProsseguir(int.parse(distanciaMaximaController.text),
+                  onPressed: () async {
+                    await _callProsseguir(
+                        int.parse(distanciaMaximaController.text),
                         int.parse(minutosToleranciaController.text));
                   },
                   child: const Text('Entendo, e quero continuar!'),
@@ -314,7 +465,7 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
         },
       );
     } else {
-      _callProsseguir(int.parse(distanciaMaximaController.text),
+      await _callProsseguir(int.parse(distanciaMaximaController.text),
           int.parse(minutosToleranciaController.text));
     }
   }

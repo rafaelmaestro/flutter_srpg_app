@@ -9,6 +9,20 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_config/flutter_config.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+class ListaConvidadosResponse {
+  final String nome;
+  final Convidados convidados;
+
+  ListaConvidadosResponse({required this.nome, required this.convidados});
+
+  factory ListaConvidadosResponse.fromJson(Map<String, dynamic> json) {
+    return ListaConvidadosResponse(
+      nome: json['nome'],
+      convidados: Convidados.fromJson(json['convidados']),
+    );
+  }
+}
+
 class GetEventoFinalizadoPresentes {
   final List<Presenca> presentes;
   final List<String> ausentes;
@@ -595,6 +609,40 @@ class EventoRepository extends ChangeNotifier {
       if (response.statusCode != 201) {
         throw Exception(responseData['message']);
       }
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<ListaConvidadosResponse> getListaConvidadosByEventoName(
+      String nomeEvento) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.get('access_token');
+
+      final uri = Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') +
+              '/evento/lista/convidados')
+          .replace(
+        queryParameters: {
+          'nome': nomeEvento,
+        },
+      );
+
+      final response = await http.get(
+        uri,
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode != 200) {
+        throw Exception(responseData['message']);
+      }
+
+      return ListaConvidadosResponse.fromJson(responseData);
     } catch (err) {
       rethrow;
     }
