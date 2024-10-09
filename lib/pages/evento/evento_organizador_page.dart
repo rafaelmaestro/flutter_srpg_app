@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:ffi';
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/constants/constants.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
@@ -7,9 +8,6 @@ import 'package:flutter_srpg_app/pages/login/home_page.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'dart:ui' as ui;
-
-import 'package:shared_preferences/shared_preferences.dart';
 
 // TODO: tratar cenários onde o usuário feche o app, ao retornar deve voltar para a tela
 class EventoOrganizadorPage extends StatefulWidget {
@@ -230,6 +228,7 @@ class _EventoOrganizadorPageState extends State<EventoOrganizadorPage>
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
                                 Text(
                                   widget.evento.descricao,

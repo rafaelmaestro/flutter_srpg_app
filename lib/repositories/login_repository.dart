@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter_config/flutter_config.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -284,6 +285,12 @@ class LoginRepository {
       );
 
       final responseData = jsonDecode(response.body);
+
+      print('----------------- getUser response --------------');
+
+      print(responseData);
+
+      print('------------------------------------------');
 
       if (response.statusCode != 200) {
         throw Exception(responseData['message']);

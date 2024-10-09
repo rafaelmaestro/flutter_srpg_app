@@ -1,13 +1,10 @@
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/helpers/format_duration.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/evento/evento_organizador_page.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
-import 'package:flutter_srpg_app/services/localizacao_service.dart';
 import 'package:get/get.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -50,8 +47,11 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Text(widget.evento.descricao),
+              padding: const EdgeInsets.only(bottom: 24, left: 10, right: 10),
+              child: Text(
+                widget.evento.descricao,
+                textAlign: TextAlign.center,
+              ),
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 24),

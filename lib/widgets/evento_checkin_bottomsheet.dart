@@ -4,12 +4,10 @@ import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/camera/camera_page.dart';
 import 'package:flutter_srpg_app/pages/evento/evento_aluno_page.dart';
-import 'package:flutter_srpg_app/pages/login/home_page.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/services/data_service.dart';
 import 'package:flutter_srpg_app/services/localizacao_service.dart';
 import 'package:get/get.dart';
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // ignore: must_be_immutable
@@ -86,8 +84,8 @@ class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Text(widget.evento.descricao),
+              padding: const EdgeInsets.only(bottom: 24, left: 10, right: 10),
+              child: Text(widget.evento.descricao, textAlign: TextAlign.center),
             ),
             Padding(
               padding: const EdgeInsets.only(bottom: 24),
