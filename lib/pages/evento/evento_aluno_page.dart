@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/constants/constants.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
@@ -69,7 +70,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.detached) {
-      _callCheckout();
+      _callCheckoutSync();
       return;
     }
     if (state != AppLifecycleState.resumed) {
@@ -189,7 +190,7 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
     _checkDistanceTimer?.cancel();
     countdownNotifier.dispose();
     WidgetsBinding.instance!.removeObserver(this);
-    _callCheckout();
+    _callCheckoutSync();
     super.dispose();
   }
 
@@ -417,6 +418,20 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
         );
       },
     );
+  }
+
+  _callCheckoutSync() {
+    try {
+      SharedPreferences.getInstance().then((prefs) {
+        final email = prefs.getString('email') ?? '';
+
+        EventoRepository().realizarCheckOutSync(widget.evento.id, email);
+      }).catchError((err) {
+        print('Erro ao obter SharedPreferences: $err');
+      });
+    } catch (err) {
+      print('Erro ao realizar check-out: $err');
+    }
   }
 
   _callCheckout() async {

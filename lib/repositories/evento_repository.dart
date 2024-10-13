@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_srpg_app/models/evento.dart';
-import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_srpg_app/models/evento.dart';
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ListaConvidadosResponse {
@@ -434,6 +432,28 @@ class EventoRepository extends ChangeNotifier {
         throw Exception(responseData['message']);
       }
       return RealizarCheckInOuCheckOutResponse.fromJson(responseData);
+    } catch (err) {
+      rethrow;
+    }
+  }
+
+  Future<void> realizarCheckOutSync(
+      String idEvento, String emailConvidado) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.get('access_token');
+
+      http.post(
+        Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') +
+            '/evento/check-out/$idEvento'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(<String, dynamic>{
+          'email_convidado': emailConvidado,
+        }),
+      );
     } catch (err) {
       rethrow;
     }
