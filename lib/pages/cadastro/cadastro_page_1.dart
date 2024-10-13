@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_config/flutter_config.dart';
 import 'package:flutter_srpg_app/helpers/is_numeric_helper.dart';
 import 'package:flutter_srpg_app/helpers/is_valid_email_helper.dart';
 import 'package:flutter_srpg_app/helpers/is_valid_password_helper.dart';
 import 'package:flutter_srpg_app/pages/cadastro/cadastro_page_2.dart';
+import 'package:flutter_srpg_app/repositories/login_repository.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:get/get.dart';
 
@@ -14,12 +16,15 @@ class CadastroPage1 extends StatefulWidget {
 }
 
 class _CadastroPage1State extends State<CadastroPage1> {
+  final LoginRepository loginRepository = LoginRepository();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
   TextEditingController nomeController = TextEditingController();
   TextEditingController cpfController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  bool isBiometriaEnabled =
+      FlutterConfig.get('BIOMETRIA_ON_BOOLEAN') == 'true' ? true : false;
 
   @override
   void initState() {
@@ -199,19 +204,22 @@ class _CadastroPage1State extends State<CadastroPage1> {
                                 isPasswordField: true,
                               ),
                               const SizedBox(height: 20),
-                              const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.looks_one_outlined,
-                                    color: Color(0xFF0A6D92),
-                                  ),
-                                  Icon(
-                                    Icons.looks_two_outlined,
-                                    color: Colors.grey,
-                                  ),
-                                ],
-                              ),
+                              if (isBiometriaEnabled)
+                                const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.looks_one_outlined,
+                                      color: Color(0xFF0A6D92),
+                                    ),
+                                    Icon(
+                                      Icons.looks_two_outlined,
+                                      color: Colors.grey,
+                                    ),
+                                  ],
+                                )
+                              else
+                                const SizedBox.shrink(),
                               const SizedBox(height: 40),
                               ElevatedButton(
                                 onPressed: () {
@@ -245,7 +253,7 @@ class _CadastroPage1State extends State<CadastroPage1> {
         ));
   }
 
-  _handleProsseguir() {
+  _handleProsseguir() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -257,6 +265,50 @@ class _CadastroPage1State extends State<CadastroPage1> {
       'senha': passwordController.text,
     };
 
-    Get.to(() => CadastroPage2(usuario: usuario));
+    if (isBiometriaEnabled) {
+      Get.to(() => CadastroPage2(usuario: usuario));
+    }
+
+    final response = await loginRepository.signUp(
+      usuario['cpf']!,
+      usuario['nome']!,
+      usuario['email']!,
+      usuario['senha']!,
+      '', // TODO: Ao implementar o fluxo de biometria de forma funcional, essa propriedade deve ser preenchida na página 2
+    );
+
+    if (response.code == 201) {
+      Get.snackbar(
+        'Deu tudo certo! 😁',
+        'Você está cadastrado e já pode acessar o sistema!',
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.green,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+      Get.offAllNamed('/login');
+    } else {
+      Get.snackbar(
+        'Erro ao realizar cadastro! 😢',
+        response.error ??
+            'Erro desconhecido ao cadastrar usuário, tente novamente mais tarde ou entre em contato com o suporte em 4002-8922',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
+    }
   }
 }

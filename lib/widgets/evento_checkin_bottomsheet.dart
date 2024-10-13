@@ -1,5 +1,6 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_config/flutter_config.dart';
 import 'package:flutter_srpg_app/controllers/posicao_controller.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/camera/camera_page.dart';
@@ -29,6 +30,8 @@ class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
   late PosicaoController local;
   String? distancia;
   bool isCheckInEnabled = false;
+  bool isBiometriaEnabled =
+      FlutterConfig.get('BIOMETRIA_ON_BOOLEAN') == 'true' ? true : false;
 
   @override
   void initState() {
@@ -168,8 +171,13 @@ class _EventoCheckInBottomSheetState extends State<EventoCheckInBottomSheet> {
       },
     );
 
+    bool biometria;
     try {
-      var biometria = await getBiometria();
+      if (isBiometriaEnabled) {
+        biometria = await getBiometria();
+      } else {
+        biometria = true;
+      }
 
       if (biometria == true) {
         final prefs = await SharedPreferences.getInstance();
