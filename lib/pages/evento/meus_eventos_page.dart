@@ -238,8 +238,6 @@ class _MeusEventosPageState extends State<MeusEventosPage> {
       return elementosExibidos;
     }
 
-    // TODO: verficar se existe algum evento onde o usuário é organizador com status 'EM_ANDAMENTO'
-    // Verificar se existe algum evento onde o usuário é organizador com status 'EM_ANDAMENTO'
     bool existeEventoEmAndamento = widget.eventosOrganizados
         .any((evento) => evento.status == 'EM_ANDAMENTO');
 

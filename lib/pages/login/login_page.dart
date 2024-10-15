@@ -21,9 +21,12 @@ class LogIn extends StatefulWidget {
 class _LogInState extends State<LogIn> {
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  TextEditingController tokenEmailController = TextEditingController();
   final LoginRepository loginRepository = LoginRepository();
   final _formKey = GlobalKey<FormState>();
+  final _formTokenEmailKey = GlobalKey<FormState>();
   ValueNotifier<int> countdownNotifier = ValueNotifier<int>(0);
+  bool hasVerifiedToken = false;
 
   @override
   void initState() {
@@ -245,13 +248,6 @@ class _LogInState extends State<LogIn> {
       }
 
       _showTokenModal(accessToken);
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('access_token', accessToken);
-
-      // await _showLoginMessage();
-
-      // Get.offNamed('/home');
     } else {
       Get.snackbar(
         'Falha no login! 😢',
@@ -283,7 +279,6 @@ class _LogInState extends State<LogIn> {
     int countdown = 10 * 60; // 10 minutos em segundos
     Timer? countdownTimer;
     bool isModalOpen = false;
-    bool hasCheckedOut = false;
 
     countdownNotifier.value = countdown;
     countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -291,9 +286,22 @@ class _LogInState extends State<LogIn> {
         countdownNotifier.value--;
       } else {
         timer.cancel();
-        if (!hasCheckedOut) {
-          hasCheckedOut = true;
-          print('Chegou no final do timer');
+        if (!hasVerifiedToken) {
+          Navigator.of(Get.context!).pop();
+          Get.snackbar(
+            'Token expirado! 😢',
+            'Parece que o token de segurança expirou! \n Por favor, tente novamente, ou entre em contato com o suporte em 📞 4002-8922',
+            backgroundColor: Colors.red,
+            colorText: Colors.white,
+            snackPosition: SnackPosition.TOP,
+            duration: const Duration(seconds: 10),
+            showProgressIndicator: true,
+            progressIndicatorBackgroundColor: Colors.red,
+            progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+              Colors.white,
+            ),
+            isDismissible: true,
+          );
         }
       }
     });
@@ -306,7 +314,6 @@ class _LogInState extends State<LogIn> {
 
     if (!isModalOpen) {
       isModalOpen = true;
-      // TODO: corrigir overflow ao abrir o teclado dentro do input do modal
       showDialog(
         context: Get.context!,
         barrierDismissible: false,
@@ -317,62 +324,70 @@ class _LogInState extends State<LogIn> {
               textAlign: TextAlign.center,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            content: ValueListenableBuilder<int>(
-              valueListenable: countdownNotifier,
-              builder: (context, value, child) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      formatCountdown(value),
-                      style: const TextStyle(
-                        fontSize: 50,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    MyInputField(
-                      label: "Insira o token",
-                      maxLen: 10,
-                      placeholder: "Ex: 1f3h56",
-                      onChange: (value) {
-                        emailController.text = value;
-                      },
-                      isEmailOrCpfField: true,
-                      validateFunction: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor, insira o token de segurança';
-                        }
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: <Widget>[
+                  ValueListenableBuilder<int>(
+                    valueListenable: countdownNotifier,
+                    builder: (context, value, child) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            formatCountdown(value),
+                            style: const TextStyle(
+                              fontSize: 50,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Form(
+                            key: _formTokenEmailKey,
+                            child: MyInputField(
+                              label: "Insira o token",
+                              maxLen: 8,
+                              placeholder: "Ex: 1f3h56jq",
+                              onChange: (value) {
+                                tokenEmailController.text = value;
+                              },
+                              isEmailOrCpfField: true,
+                              validateFunction: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return 'Por favor, insira o token de segurança';
+                                }
 
-                        return null;
-                      },
-                      prefixIcon:
-                          const Icon(Icons.key, color: Color(0xFF0A6D92)),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                );
-              },
+                                if (value.length != 8) {
+                                  return 'Insira um token válido';
+                                }
+
+                                return null;
+                              },
+                              prefixIcon: const Icon(Icons.key,
+                                  color: Color(0xFF0A6D92)),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
             actions: <Widget>[
-              Center(
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFF0A6D92),
-                    side: const BorderSide(color: Color(0xFF0A6D92), width: 2),
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  onPressed: () {
-                    countdownTimer?.cancel();
-                    if (!hasCheckedOut) {
-                      hasCheckedOut = true;
-                      print('Clicou no botão de sair');
-                    }
-                  },
-                  child: const Text(
-                    'Validar token',
-                    style: TextStyle(color: Colors.white),
-                  ),
+              TextButton(
+                style: TextButton.styleFrom(
+                  backgroundColor: const Color(0xFF0A6D92),
+                  side: const BorderSide(color: Color(0xFF0A6D92), width: 2),
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+                onPressed: () {
+                  if (!hasVerifiedToken) {
+                    _callCompareToken(tokenEmailController.text, accessToken);
+                  }
+                },
+                child: const Text(
+                  'Validar token',
+                  style: TextStyle(color: Colors.white),
                 ),
               ),
             ],
@@ -383,6 +398,66 @@ class _LogInState extends State<LogIn> {
         countdownTimer?.cancel();
         isModalOpen = false;
       });
+    }
+  }
+
+  _callCompareToken(String tokenEmail, String accessToken) async {
+    if (!_formTokenEmailKey.currentState!.validate()) {
+      return;
+    }
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      final response =
+          await loginRepository.compareToken(tokenEmail, accessToken);
+
+      if (response.code == 401) {
+        Get.snackbar(
+          'Token inválido! 😢',
+          'O token inserido é inválido! \nPor favor, verifique o token e tente novamente, ou entre em contato com o suporte em 📞 4002-8922',
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 10),
+          showProgressIndicator: true,
+          progressIndicatorBackgroundColor: Colors.red,
+          progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+            Colors.white,
+          ),
+          isDismissible: true,
+        );
+
+        setState(() {
+          hasVerifiedToken = false;
+        });
+
+        return;
+      }
+
+      setState(() {
+        hasVerifiedToken = true;
+      });
+
+      await _showLoginMessage();
+
+      Get.offNamed('/home');
+
+      await prefs.setString('access_token', accessToken);
+    } catch (err) {
+      Get.snackbar(
+        'Falha ao validar token! 😢',
+        'Erro desconhecido ao validar token! \nPor favor, verifique o token e tente novamente, ou entre em contato com o suporte em 📞 4002-8922',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 10),
+        showProgressIndicator: true,
+        progressIndicatorBackgroundColor: Colors.red,
+        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+          Colors.white,
+        ),
+        isDismissible: true,
+      );
     }
   }
 

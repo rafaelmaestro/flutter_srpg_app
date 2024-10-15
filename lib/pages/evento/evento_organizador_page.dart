@@ -9,7 +9,6 @@ import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
-// TODO: tratar cenários onde o usuário feche o app, ao retornar deve voltar para a tela
 class EventoOrganizadorPage extends StatefulWidget {
   final Evento evento;
   bool? atualizarStatus = false;

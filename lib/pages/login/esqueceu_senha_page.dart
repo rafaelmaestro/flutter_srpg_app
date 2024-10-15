@@ -4,7 +4,6 @@ import 'package:flutter_srpg_app/helpers/is_valid_email_helper.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:get/get.dart';
 
-// TODO: Implementar a página de esqueceu a senha
 class EsqueceuSenhaPage extends StatefulWidget {
   const EsqueceuSenhaPage({super.key});
 

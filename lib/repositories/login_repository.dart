@@ -316,4 +316,38 @@ class LoginRepository {
       rethrow;
     }
   }
+
+  Future<HttpResponse> compareToken(
+      String tokenEmail, String accessToken) async {
+    try {
+      final response = await http.post(
+        Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/usuario/token'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(<String, String>{'token': tokenEmail}),
+      );
+
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 401) {
+        return HttpResponse.fromJson({
+          'code': response.statusCode,
+          'error': 'Token inválido!',
+        });
+      }
+
+      if (response.statusCode != 200) {
+        throw Exception(responseData['message']);
+      }
+
+      return HttpResponse.fromJson({
+        'code': response.statusCode,
+        'error': null,
+      });
+    } catch (err) {
+      rethrow;
+    }
+  }
 }
