@@ -189,7 +189,7 @@ class _LogInState extends State<LogIn> {
                             RichText(
                               text: TextSpan(
                                 style: const TextStyle(
-                                    fontSize: 12, color: Colors.black),
+                                    fontSize: 16, color: Colors.black),
                                 children: <TextSpan>[
                                   TextSpan(
                                     text: 'Esqueceu sua senha?',
