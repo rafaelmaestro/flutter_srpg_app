@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_srpg_app/helpers/handle_session_expired.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -116,11 +117,12 @@ class LoginRepository {
 
     final responseData = jsonDecode(response.body);
 
-    if (response.statusCode == 200) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('access_token', responseData['access_token']);
+    if (response.statusCode == 401) {
+      handleSessionExpired();
+    }
 
-      final getMeResponse = await getMe();
+    if (response.statusCode == 200) {
+      final getMeResponse = await getMe(responseData['access_token']);
 
       if (getMeResponse.code != 200) {
         return LoginResponse.fromJson({
@@ -141,11 +143,7 @@ class LoginRepository {
     }
   }
 
-  Future<GetMeResponse> getMe() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    final accessToken = prefs.get('access_token');
-
+  Future<GetMeResponse> getMe(String accessToken) async {
     final response = await http.get(
         Uri.parse(FlutterConfig.get('SRPG_API_BASE_URL') + '/me'),
         headers: <String, String>{
@@ -154,6 +152,10 @@ class LoginRepository {
         });
 
     final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 401) {
+      handleSessionExpired();
+    }
 
     if (response.statusCode == 200) {
       final prefs = await SharedPreferences.getInstance();
@@ -192,6 +194,10 @@ class LoginRepository {
     );
 
     final responseData = jsonDecode(response.body);
+
+    if (response.statusCode == 401) {
+      handleSessionExpired();
+    }
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       return HttpResponse.fromJson({
@@ -253,6 +259,10 @@ class LoginRepository {
 
       final responseData = jsonDecode(response.body);
 
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
+
       if (response.statusCode != 200) {
         throw Exception(responseData['message']);
       }
@@ -286,11 +296,9 @@ class LoginRepository {
 
       final responseData = jsonDecode(response.body);
 
-      print('----------------- getUser response --------------');
-
-      print(responseData);
-
-      print('------------------------------------------');
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
 
       if (response.statusCode != 200) {
         throw Exception(responseData['message']);

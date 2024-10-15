@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_srpg_app/helpers/handle_session_expired.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -252,6 +252,10 @@ class EventoRepository extends ChangeNotifier {
 
     final responseData = jsonDecode(response.body);
 
+    if (response.statusCode == 401) {
+      handleSessionExpired();
+    }
+
     if (response.statusCode == 200) {
       return EventosResponse.fromJson(responseData);
     } else {
@@ -274,6 +278,9 @@ class EventoRepository extends ChangeNotifier {
         ),
       );
 
+      if (response.code == 401) {
+        handleSessionExpired();
+      }
       if (response.code != 200) {
         throw Exception(response.error);
       }
@@ -301,6 +308,10 @@ class EventoRepository extends ChangeNotifier {
         ),
       );
 
+      if (response.code == 401) {
+        handleSessionExpired();
+      }
+
       if (response.code != 200) {
         throw Exception(response.error);
       }
@@ -324,6 +335,10 @@ class EventoRepository extends ChangeNotifier {
           status: 'FINALIZADO',
         ),
       );
+
+      if (response.code == 401) {
+        handleSessionExpired();
+      }
 
       if (response.code != 200) {
         throw Exception(response.error);
@@ -370,6 +385,10 @@ class EventoRepository extends ChangeNotifier {
 
     final responseData = jsonDecode(response.body);
 
+    if (response.statusCode == 401) {
+      handleSessionExpired();
+    }
+
     if (response.statusCode == 201) {
       return EventoResponse.fromJson(responseData);
     } else {
@@ -394,6 +413,10 @@ class EventoRepository extends ChangeNotifier {
       );
 
       final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
 
       if (response.statusCode != 200) {
         throw Exception(responseData['message']);
@@ -427,6 +450,10 @@ class EventoRepository extends ChangeNotifier {
       );
 
       final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
 
       if (response.statusCode != 201) {
         throw Exception(responseData['message']);
@@ -479,6 +506,10 @@ class EventoRepository extends ChangeNotifier {
 
       final responseData = jsonDecode(response.body);
 
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
+
       if (response.statusCode != 201) {
         throw Exception(responseData['message']);
       }
@@ -513,6 +544,10 @@ class EventoRepository extends ChangeNotifier {
 
       final responseData = jsonDecode(response.body);
 
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
+
       if (response.statusCode != 200) {
         throw Exception(responseData['message']);
       }
@@ -543,6 +578,10 @@ class EventoRepository extends ChangeNotifier {
 
       final responseData = jsonDecode(response.body);
 
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
+
       if (response.statusCode != 200) {
         throw Exception(responseData['message']);
       }
@@ -570,6 +609,10 @@ class EventoRepository extends ChangeNotifier {
       );
 
       final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
 
       if (response.statusCode != 200) {
         throw Exception(responseData['message']);
@@ -599,6 +642,10 @@ class EventoRepository extends ChangeNotifier {
 
       final responseData = jsonDecode(response.body);
 
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
+
       if (response.statusCode != 200) {
         throw Exception(responseData['message']);
       }
@@ -625,6 +672,10 @@ class EventoRepository extends ChangeNotifier {
       );
 
       final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
 
       if (response.statusCode != 201) {
         throw Exception(responseData['message']);
@@ -657,6 +708,10 @@ class EventoRepository extends ChangeNotifier {
       );
 
       final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 401) {
+        handleSessionExpired();
+      }
 
       if (response.statusCode != 200) {
         throw Exception(responseData['message']);

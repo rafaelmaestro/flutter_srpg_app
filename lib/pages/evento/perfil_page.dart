@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_srpg_app/helpers/is_numeric_helper.dart';
 import 'package:flutter_srpg_app/helpers/is_valid_email_helper.dart';
 import 'package:flutter_srpg_app/helpers/is_valid_password_helper.dart';
@@ -89,8 +87,20 @@ class _PerfilPageState extends State<PerfilPage> {
               fontWeight: FontWeight.bold,
               fontSize: 24,
             ),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 20),
+          TextButton(
+              onPressed: () {
+                _handleLogout();
+              },
+              child: const Text(
+                'Sair do SRPG',
+                style: TextStyle(
+                  color: const Color(0xFF0A6D92),
+                ),
+                textAlign: TextAlign.center,
+              )),
+          // const SizedBox(height: 10),
           Divider(
             color: Colors.grey.withOpacity(.3),
             thickness: 1,
@@ -123,7 +133,7 @@ class _PerfilPageState extends State<PerfilPage> {
                                   width: 8), // Espaço entre o ícone e o texto
                               Icon(
                                 Icons.person, // Ícone de configurações
-                                color: Colors.black, // Cor do ícone
+                                color: Color(0xFF0A6D92), // Cor do ícone
                               ),
                             ],
                           ),
@@ -164,7 +174,7 @@ class _PerfilPageState extends State<PerfilPage> {
                                   width: 8), // Espaço entre o ícone e o texto
                               Icon(
                                 Icons.settings, // Ícone de configurações
-                                color: Colors.black, // Cor do ícone
+                                color: Color(0xFF0A6D92), // Cor do ícone
                               ),
                             ],
                           ),
@@ -571,5 +581,26 @@ class _PerfilPageState extends State<PerfilPage> {
         isDismissible: true,
       );
     }
+  }
+
+  _handleLogout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+    Get.offAllNamed('/');
+
+    Get.snackbar(
+      'Deslogado com sucesso! 🚪',
+      'Você foi deslogado com sucesso.',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 10),
+      showProgressIndicator: true,
+      progressIndicatorBackgroundColor: Colors.green,
+      progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+        Colors.white,
+      ),
+      isDismissible: true,
+    );
   }
 }

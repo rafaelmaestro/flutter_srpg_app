@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/helpers/is_numeric_helper.dart';
@@ -21,9 +23,11 @@ class _LogInState extends State<LogIn> {
   TextEditingController passwordController = TextEditingController();
   final LoginRepository loginRepository = LoginRepository();
   final _formKey = GlobalKey<FormState>();
+  ValueNotifier<int> countdownNotifier = ValueNotifier<int>(0);
 
   @override
   void initState() {
+    _handleSession();
     super.initState();
   }
 
@@ -240,26 +244,14 @@ class _LogInState extends State<LogIn> {
         return;
       }
 
+      _showTokenModal(accessToken);
+
       final prefs = await SharedPreferences.getInstance();
-      final nomeCompleto = prefs.getString('nome');
-      final nomeUsuario = nomeCompleto?.split(' ')[0] ?? nomeCompleto;
+      await prefs.setString('access_token', accessToken);
 
-      Get.snackbar(
-        'Bem vindo de volta, $nomeUsuario! 🎉',
-        'Você está logado e pronto para usar o SRPG!',
-        backgroundColor: Colors.green,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.TOP,
-        duration: const Duration(seconds: 10),
-        showProgressIndicator: true,
-        progressIndicatorBackgroundColor: Colors.green,
-        progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
-          Colors.white,
-        ),
-        isDismissible: true,
-      );
+      // await _showLoginMessage();
 
-      Get.offNamed('/home');
+      // Get.offNamed('/home');
     } else {
       Get.snackbar(
         'Falha no login! 😢',
@@ -285,5 +277,165 @@ class _LogInState extends State<LogIn> {
 
   handleEsqueceuSenha() {
     Get.to(() => const EsqueceuSenhaPage());
+  }
+
+  void _showTokenModal(String accessToken) {
+    int countdown = 10 * 60; // 10 minutos em segundos
+    Timer? countdownTimer;
+    bool isModalOpen = false;
+    bool hasCheckedOut = false;
+
+    countdownNotifier.value = countdown;
+    countdownTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (countdownNotifier.value > 0) {
+        countdownNotifier.value--;
+      } else {
+        timer.cancel();
+        if (!hasCheckedOut) {
+          hasCheckedOut = true;
+          print('Chegou no final do timer');
+        }
+      }
+    });
+
+    String formatCountdown(int seconds) {
+      final minutes = (seconds ~/ 60).toString().padLeft(2, '0');
+      final remainingSeconds = (seconds % 60).toString().padLeft(2, '0');
+      return '$minutes:$remainingSeconds';
+    }
+
+    if (!isModalOpen) {
+      isModalOpen = true;
+      // TODO: corrigir overflow ao abrir o teclado dentro do input do modal
+      showDialog(
+        context: Get.context!,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text(
+              'Token de segurança enviado para o seu e-mail! 📧',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: ValueListenableBuilder<int>(
+              valueListenable: countdownNotifier,
+              builder: (context, value, child) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      formatCountdown(value),
+                      style: const TextStyle(
+                        fontSize: 50,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    MyInputField(
+                      label: "Insira o token",
+                      maxLen: 10,
+                      placeholder: "Ex: 1f3h56",
+                      onChange: (value) {
+                        emailController.text = value;
+                      },
+                      isEmailOrCpfField: true,
+                      validateFunction: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Por favor, insira o token de segurança';
+                        }
+
+                        return null;
+                      },
+                      prefixIcon:
+                          const Icon(Icons.key, color: Color(0xFF0A6D92)),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                );
+              },
+            ),
+            actions: <Widget>[
+              Center(
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: const Color(0xFF0A6D92),
+                    side: const BorderSide(color: Color(0xFF0A6D92), width: 2),
+                    minimumSize: const Size(double.infinity, 50),
+                  ),
+                  onPressed: () {
+                    countdownTimer?.cancel();
+                    if (!hasCheckedOut) {
+                      hasCheckedOut = true;
+                      print('Clicou no botão de sair');
+                    }
+                  },
+                  child: const Text(
+                    'Validar token',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ).then((_) {
+        // Cancelar o timer quando o diálogo for fechado
+        countdownTimer?.cancel();
+        isModalOpen = false;
+      });
+    }
+  }
+
+  _handleSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accessToken = prefs.getString('access_token');
+
+    if (accessToken != null) {
+      final response = await LoginRepository().getMe(accessToken);
+
+      if (response.code == 200) {
+        await _showLoginMessage();
+        Get.offNamed('/home');
+      } else {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.clear();
+
+        Get.snackbar(
+          'Sessão expirada! 😢',
+          'Parece que sua sessão expirou, por favor, faça login novamente para continuar usando o SRPG!',
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+          snackPosition: SnackPosition.TOP,
+          duration: const Duration(seconds: 10),
+          showProgressIndicator: true,
+          progressIndicatorBackgroundColor: Colors.orange,
+          progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+            Colors.white,
+          ),
+          isDismissible: true,
+        );
+      }
+    }
+  }
+
+  _showLoginMessage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final nomeCompleto = prefs.getString('nome');
+    final nomeUsuario = nomeCompleto?.split(' ')[0] ?? nomeCompleto;
+
+    Get.snackbar(
+      'Bem vindo de volta, $nomeUsuario! 🎉',
+      'Você está logado e pronto para usar o SRPG!',
+      backgroundColor: Colors.green,
+      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      duration: const Duration(seconds: 10),
+      showProgressIndicator: true,
+      progressIndicatorBackgroundColor: Colors.green,
+      progressIndicatorValueColor: const AlwaysStoppedAnimation<Color>(
+        Colors.white,
+      ),
+      isDismissible: true,
+    );
   }
 }
