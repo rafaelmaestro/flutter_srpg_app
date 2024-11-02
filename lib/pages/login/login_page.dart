@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_config/flutter_config.dart';
 import 'package:flutter_srpg_app/helpers/is_numeric_helper.dart';
 import 'package:flutter_srpg_app/helpers/is_valid_email_helper.dart';
 import 'package:flutter_srpg_app/pages/cadastro/cadastro_page_1.dart';
@@ -27,6 +28,8 @@ class _LogInState extends State<LogIn> {
   final _formTokenEmailKey = GlobalKey<FormState>();
   ValueNotifier<int> countdownNotifier = ValueNotifier<int>(0);
   bool hasVerifiedToken = false;
+  bool validadeSession =
+      FlutterConfig.get('VALIDATE_SESSION_BOOLEAN') == 'true';
 
   @override
   void initState() {
@@ -465,7 +468,7 @@ class _LogInState extends State<LogIn> {
     final prefs = await SharedPreferences.getInstance();
     final accessToken = prefs.getString('access_token');
 
-    if (accessToken != null) {
+    if (accessToken != null && validadeSession) {
       final response = await LoginRepository().getMe(accessToken);
 
       if (response.code == 200) {

@@ -350,4 +350,15 @@ class LoginRepository {
       rethrow;
     }
   }
+
+  void recuperarSenha(String email) {
+    http.post(
+      Uri.parse(
+          FlutterConfig.get('SRPG_API_BASE_URL') + '/usuario/recuperar-senha'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{'emailOuCpf': email}),
+    );
+  }
 }

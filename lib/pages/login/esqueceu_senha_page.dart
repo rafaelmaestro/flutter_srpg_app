@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_srpg_app/helpers/is_numeric_helper.dart';
 import 'package:flutter_srpg_app/helpers/is_valid_email_helper.dart';
+import 'package:flutter_srpg_app/repositories/login_repository.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:get/get.dart';
 
@@ -12,8 +13,8 @@ class EsqueceuSenhaPage extends StatefulWidget {
 }
 
 class _EsqueceuSenhaPageState extends State<EsqueceuSenhaPage> {
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
+  final LoginRepository loginRepository = LoginRepository();
+  TextEditingController emailOuCpfController = TextEditingController();
   bool isButtonPressed = false;
   final _formKey = GlobalKey<FormState>();
 
@@ -143,7 +144,7 @@ class _EsqueceuSenhaPageState extends State<EsqueceuSenhaPage> {
                 label: "Email ou CPF",
                 placeholder: "Insira seu e-mail ou CPF",
                 onChange: (value) {
-                  emailController.text = value;
+                  emailOuCpfController.text = value;
                 },
                 isEmailOrCpfField: true,
                 validateFunction: (value) {
@@ -201,10 +202,13 @@ class _EsqueceuSenhaPageState extends State<EsqueceuSenhaPage> {
     }
   }
 
-  _handleProsseguir() {
+  _handleProsseguir() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
+
+    LoginRepository().recuperarSenha(emailOuCpfController.text);
+
     setState(() {
       isButtonPressed = true;
     });
