@@ -457,8 +457,8 @@ class _EventoAlunoPageState extends State<EventoAlunoPage>
         isDismissible: true,
       );
 
-      Get.off(() =>
-          const HomePage()); // Isso remove a página atual e navega para a HomePage
+      Get.offAll(() =>
+          const HomePage()); // Volta para a tela inicial tirando todas as outras telas da pilha
     } catch (err) {
       Get.snackbar(
         'Erro ao realizar check-out! 😢',
