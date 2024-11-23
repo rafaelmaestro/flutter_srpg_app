@@ -149,6 +149,8 @@ class _EventoIniciarBottomSheetState extends State<EventoIniciarBottomSheet> {
           dtUltAtualizacao: response.evento.dtUltAtualizacao,
           dtInicioPrevista: response.evento.dtInicioPrevista,
           dtFimPrevista: response.evento.dtFimPrevista,
+          minutosTolerancia: response.evento.minutosTolerancia,
+          distanciaMaximaPermitida: response.evento.distanciaMaximaPermitida,
           local: response.evento.local,
           cpfOrganizador: response.evento.cpfOrganizador,
           convidados: response.evento.convidados,

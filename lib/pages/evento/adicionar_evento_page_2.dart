@@ -1,13 +1,10 @@
-import 'package:datetime_picker_formfield/datetime_picker_formfield.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_srpg_app/models/evento.dart';
 import 'package:flutter_srpg_app/pages/evento/adicionar_evento_page_3.dart';
 import 'package:flutter_srpg_app/repositories/evento_repository.dart';
 import 'package:flutter_srpg_app/widgets/my_input_field.dart';
 import 'package:flutter_srpg_app/widgets/navigation_bar.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 
 class AdicionarEventoPage2 extends StatefulWidget {
   Evento eventoASerCriado;
@@ -235,11 +232,6 @@ class _EventoAlunoPageState extends State<AdicionarEventoPage2> {
     try {
       final responseListaConvidados = await EventoRepository()
           .getListaConvidadosByEventoName(widget.eventoASerCriado.nome);
-
-      print('------------------');
-      print('Lista de convidados do evento semelhante:');
-      print(responseListaConvidados.convidados.emails);
-      print('------------------');
 
       if (responseListaConvidados.convidados.emails.isEmpty) {
         Evento eventoASerCriado = Evento(
